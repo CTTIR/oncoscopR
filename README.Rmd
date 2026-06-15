@@ -1,0 +1,74 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file. -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# oncoscopR <a href="https://r-heller.github.io/oncoscopR/"><img src="man/figures/logo.png" align="right" height="138" /></a>
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/r-heller/oncoscopR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/r-heller/oncoscopR/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/r-heller/oncoscopR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/r-heller/oncoscopR)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+<!-- badges: end -->
+
+`oncoscopR` is an auditor live-evaluation dashboard for haematological
+tumour centres. It reads tumour-documentation Excel spreadsheets and
+computes:
+
+* coverage and quality indicators (Tumorkonferenz, Psychoonkologie,
+  Sozialdienst, HIV/Hepatitis screening, …);
+* OPS-8-544 complex chemotherapy block counts;
+* OPS-1-941 complex diagnostics counts (Morphologie,
+  Immunphänotypisierung, Zytogenetik, Molekulargenetik);
+* Kaplan-Meier curves for PFS and OS, per entity or grouped;
+* Oncoprint tile plots for mutation profiles;
+* a separate Zytogenetik view for structural findings.
+
+A **fully synthetic example cohort** is bundled, so the dashboard can be
+explored without any real patient data. Real data is never committed.
+
+## Installation
+
+```r
+# install.packages("pak")
+pak::pak("r-heller/oncoscopR")
+```
+
+## Quick start
+
+```r
+library(oncoscopR)
+
+# Programmatic
+path   <- onc_example_path()
+cohort <- onc_read_cohort(path)
+nrow(cohort)
+
+# Interactive dashboard
+onc_run_app()
+```
+
+In the running app, click **Beispieldaten laden** to load the bundled
+synthetic cohort, or use the **fileInput** to upload your own
+documentation workbook.
+
+## Authors
+
+* Hanno Witte (aut)
+* Raban Heller (aut, cre — ORCID
+  [0000-0001-8006-9742](https://orcid.org/0000-0001-8006-9742))
+
+## License
+
+MIT.

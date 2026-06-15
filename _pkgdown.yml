@@ -1,0 +1,48 @@
+url: https://r-heller.github.io/oncoscopR/
+
+template:
+  package: themakR
+  light-switch: true
+
+home:
+  title: oncoscopR — auditor dashboard for haematological oncology cohorts
+  description: >
+    Reads tumour-documentation spreadsheets, computes quality and coverage
+    indicators, OPS-8-544 and OPS-1-941 counting, Kaplan-Meier analyses,
+    oncoprint and cytogenetics summaries. Ships an interactive Shiny
+    dashboard and a synthetic example cohort.
+
+navbar:
+  structure:
+    left:  [reference, articles, news]
+    right: [search, github, lightswitch]
+
+reference:
+  - title: Launch the dashboard
+    contents:
+      - onc_run_app
+      - onc_example_path
+  - title: Readers
+    desc: Read tumour-documentation Excel sheets.
+    contents:
+      - onc_read_cohort
+      - onc_read_therapy
+      - onc_read_diagnostics
+      - onc_read_tumorboard
+  - title: Parsers
+    desc: Reshape and classify the raw sheets for downstream analysis.
+    contents:
+      - onc_prepare_therapy_blocks
+      - onc_prepare_diagnostic_blocks
+      - onc_parse_oncoprint
+      - onc_parse_cytogenetics
+  - title: Alteration classification helpers
+    contents:
+      - onc_normalize_alteration
+      - onc_alteration_type
+      - onc_is_mutation
+
+articles:
+  - title: Getting started
+    contents:
+      - oncoscopR

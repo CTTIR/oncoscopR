@@ -1,0 +1,43 @@
+# R --------------------------------------------------------------------------
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+.Rprofile
+.Renviron
+
+# Build artefacts ------------------------------------------------------------
+oncoscopR.Rcheck/
+oncoscopR_*.tar.gz
+oncoscopR_*.tgz
+oncoscopR_*.zip
+src/*.o
+src/*.so
+src/*.dll
+
+# pkgdown --------------------------------------------------------------------
+docs/
+
+# testthat -------------------------------------------------------------------
+tests/testthat/Rplots.pdf
+
+# Coverage -------------------------------------------------------------------
+*.coverage
+covr.out
+.covrignore
+
+# OS / editor ----------------------------------------------------------------
+.DS_Store
+.vscode/
+.idea/
+*~
+
+# Project-private work area (user-managed notes, not for the package) --------
+.audit/
+
+# Real patient data — must never be committed --------------------------------
+Daten.xlsx
+Daten(*).xlsx
+Tumorboardbeschluesse.csv
+Therapien*.xlsx

@@ -1,0 +1,56 @@
+Package: oncoscopR
+Type: Package
+Title: Audit and Analysis Dashboard for Haematological Oncology Cohorts
+Version: 0.1.0
+Authors@R: c(
+    person("Hanno", "Witte", role = "aut"),
+    person("Raban", "Heller", , "raban.heller@outlook.com",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-8006-9742")))
+Description: Reads tumour-documentation spreadsheets from haematological tumour
+    centres and computes quality and coverage indicators, OPS-8-544 complex
+    chemotherapy block counts, OPS-1-941 complex diagnostics counts,
+    Kaplan-Meier analyses, oncoprint and cytogenetics summaries, plus an
+    interactive Shiny dashboard for auditor live evaluation. Includes a fully
+    synthetic example cohort for demonstration and testing.
+License: MIT + file LICENSE
+URL: https://github.com/r-heller/oncoscopR,
+    https://r-heller.github.io/oncoscopR/
+BugReports: https://github.com/r-heller/oncoscopR/issues
+Encoding: UTF-8
+Language: en-US
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1)
+Imports:
+    bslib,
+    bsicons,
+    cli,
+    dplyr,
+    DT,
+    ggplot2,
+    janitor,
+    lubridate,
+    readxl,
+    rlang,
+    scales,
+    shiny,
+    stats,
+    stringr,
+    survival,
+    tidyr,
+    utils
+Suggests:
+    covr,
+    knitr,
+    openxlsx,
+    pkgdown,
+    rmarkdown,
+    shinytest2,
+    survminer,
+    testthat (>= 3.0.0),
+    withr
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/Needs/website: r-lib/pkgdown, CTTIR/themakR
