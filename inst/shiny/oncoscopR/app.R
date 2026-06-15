@@ -9,15 +9,67 @@
 #     example-data button)
 #   - replacement content for the `path_info` slot (same widget id, new text)
 #
-# All backend logic is in oncoscopR:: — see ?onc_run_app and ?onc_example_path.
+# Visual identity: Hugo Coder palette via _brand.yml + bs_theme + thematic.
+#
+# All backend logic is in oncoscopR:: -- see ?onc_run_app and ?onc_example_path.
+
+# ---- Theme: Hugo Coder design tokens via brand.yml --------------------------
+.coder_theme <- function() {
+  app_dir <- system.file("shiny", "oncoscopR", package = "oncoscopR")
+  scss <- file.path(app_dir, "www", "custom.scss")
+  theme <- bslib::bs_theme(
+    version = 5,
+    bg = "#fafafa",
+    fg = "#212121",
+    primary = "#1565c0",
+    secondary = "#e0e0e0",
+    success = "#00897b",
+    info = "#1e88e5",
+    warning = "#ffb300",
+    danger = "#e53935",
+    base_font = bslib::font_collection(
+      "system-ui", "-apple-system", "Segoe UI", "Roboto",
+      "Helvetica", "sans-serif"
+    ),
+    code_font = bslib::font_collection(
+      "SF Mono", "Consolas", "Liberation Mono", "Menlo", "monospace"
+    ),
+    "border-radius" = "4px",
+    "card-border-radius" = "4px",
+    "card-border-color" = "#e0e0e0",
+    "navbar-bg" = "#fafafa",
+    "body-bg" = "#fafafa",
+    "link-decoration" = "none",
+    "link-hover-decoration" = "underline"
+  )
+  if (file.exists(scss) && requireNamespace("sass", quietly = TRUE)) {
+    theme <- bslib::bs_add_rules(theme, sass::sass_file(scss))
+  }
+  theme
+}
+
+# ---- Plot theming: ggplot inherits app theme -------------------------------
+if (requireNamespace("thematic", quietly = TRUE)) {
+  thematic::thematic_shiny(font = "auto")
+}
+ggplot2::theme_set(ggplot2::theme_minimal(base_size = 13))
 
 ui <- shiny::fluidPage(
-  theme = bslib::bs_theme(version = 5, bootswatch = "flatly"),
+  theme = .coder_theme(),
   title = "Hämatologisches Tumorzentrum – Auditor-Auswertung",
   bslib::layout_sidebar(
     sidebar = bslib::sidebar(
       width = 390,
-      shiny::h4("Auditor-App"),
+      shiny::div(
+        class = "d-flex align-items-center gap-2 mb-2",
+        shiny::tags$img(
+          src = "logo.svg",
+          alt = "oncoscopR logo",
+          height = "32",
+          style = "display:inline-block;"
+        ),
+        shiny::h4("Auditor-App", class = "m-0")
+      ),
 
       # --- sanctioned addition: data source -----------------------------
       bslib::card(

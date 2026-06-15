@@ -1,0 +1,109 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file. -->
+
+# oncoscopR <a href="https://cttir.github.io/oncoscopR/"><img src="man/figures/logo.png" align="right" height="139" alt="oncoscopR hex logo" /></a>
+
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/CTTIR/oncoscopR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CTTIR/oncoscopR/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/CTTIR/oncoscopR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/CTTIR/oncoscopR)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License:
+MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+<!-- badges: end -->
+
+`oncoscopR` is an **auditor live-evaluation dashboard** for
+haematological tumour centres. It reads the tumour-documentation Excel
+sheets that auditors work with day to day, and turns them into a single
+interactive view of cohort quality, OPS-coded complex chemotherapy and
+diagnostics, survival, and molecular profiles. The package is part of
+the **CTTIR** suite and shares the
+[themakR](https://github.com/CTTIR/themakR) visual identity.
+
+## What you get
+
+- **Auditor dashboard.** Patient counts, primary-case / patient-case
+  flags, Psychoonkologie / Sozialdienst / HIV-Hepatitis screening
+  coverage.
+- **Simple queries.** Pre-baked auditor questions (“HL 2025?”,
+  “Multiples Myelom?”, “documented psycho-oncology?”) plus a
+  custom-column builder.
+- **OPS-8-544 complex chemotherapy.** Block counts per protocol, per
+  diagnosis, monthly trend, full block-detail table.
+- **OPS-1-941 complex diagnostics.** Counts per component (Morphologie,
+  Immunphänotypisierung, Zytogenetik, Molekulargenetik) and per
+  diagnosis.
+- **Kaplan-Meier.** PFS / OS with auto event detection, stratification,
+  diagnose-specific filter. Uses `survminer` when present, base ggplot
+  otherwise.
+- **Oncoprint.** Tile plot of true mutations/variants split by entity,
+  with structural and cytogenetic findings reported separately.
+- **Zytogenetik.** Dedicated view for karyotypic findings (`del(17p)`,
+  `t(11;14)`, `Trisomie 12`, complex karyotype, …).
+- **Tumour-board decisions.** Capture, review, download / re-upload —
+  all in-session, never written to disk by the app.
+
+A **fully synthetic example cohort** (`inst/extdata/onc_example.xlsx`)
+is bundled, so you can explore everything without any real patient data.
+Real data is never committed.
+
+## Installation
+
+``` r
+# install.packages("pak")
+pak::pak("CTTIR/oncoscopR")
+```
+
+## Quick start
+
+``` r
+library(oncoscopR)
+
+# Programmatic — readers + parsers
+path   <- onc_example_path()
+cohort <- onc_read_cohort(path)
+nrow(cohort)
+
+onco <- onc_parse_oncoprint(cohort)
+head(onco[, c("patient_label", "diagnose_label", "alteration")])
+
+# Interactive dashboard
+onc_run_app()
+```
+
+In the running app, click **Beispieldaten laden** to load the bundled
+synthetic cohort, or use the **Kohorten-Excel (.xlsx) hochladen**
+control to upload your own tumour-documentation workbook. The dashboard
+accepts the canonical sheets `Basisdaten`, `Komplexe Chemotherapie`, and
+`Komplexe Diagnostik` (with regex fallbacks).
+
+## Public API
+
+| Function | Purpose |
+|----|----|
+| `onc_run_app()` | Launch the Shiny dashboard |
+| `onc_example_path()` | Path to the bundled synthetic workbook |
+| `onc_read_cohort()` | Read the Basisdaten sheet |
+| `onc_read_therapy()` | Read the OPS-8-544 complex-chemotherapy sheet |
+| `onc_read_diagnostics()` | Read the OPS-1-941 complex-diagnostics sheet |
+| `onc_read_tumorboard()` | Load a previously exported tumour-board CSV |
+| `onc_prepare_therapy_blocks()` | Per-block tibble for OPS-8-544 |
+| `onc_prepare_diagnostic_blocks()` | Per-case tibble for OPS-1-941 |
+| `onc_parse_oncoprint()` | Split + classify the mutation free-text column |
+| `onc_parse_cytogenetics()` | Split + classify the cytogenetics column |
+| `onc_normalize_alteration()`, `onc_alteration_type()`, `onc_is_mutation()` | Classification helpers |
+
+See the [reference index](https://cttir.github.io/oncoscopR/reference/)
+for parameter and return-type contracts.
+
+## Authors
+
+- **Hanno Witte** *(aut)*
+- **Raban Heller** *(aut, cre)* — ORCID
+  [0000-0001-8006-9742](https://orcid.org/0000-0001-8006-9742)
+
+## License
+
+MIT.

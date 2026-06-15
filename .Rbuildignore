@@ -5,6 +5,7 @@
 ^\.gitignore$
 ^\.audit$
 ^\***REMOVED***$
+^pkgdown$
 ^\.archive$
 ^data-raw$
 ^cran-comments\.md$

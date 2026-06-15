@@ -1,0 +1,30 @@
+meta:
+  name: "oncoscopR"
+
+color:
+  palette:
+    coder-bg-light:   "#fafafa"
+    coder-fg-light:   "#212121"
+    coder-alt-light:  "#e0e0e0"
+    coder-link-light: "#1565c0"
+    coder-bg-dark:    "#212121"
+    coder-fg-dark:    "#dadada"
+    coder-alt-dark:   "#424242"
+    coder-link-dark:  "#42a5f5"
+    coder-info:       "#1e88e5"
+    coder-success:    "#00897b"
+    coder-warning:    "#ffb300"
+    coder-danger:     "#e53935"
+  foreground: coder-fg-light
+  background: coder-bg-light
+  primary:    coder-link-light
+  info:       coder-info
+  success:    coder-success
+  warning:    coder-warning
+  danger:     coder-danger
+
+typography:
+  base:
+    family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif
+  monospace:
+    family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace

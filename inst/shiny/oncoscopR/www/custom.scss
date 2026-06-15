@@ -1,0 +1,19 @@
+// oncoscopR — Hugo Coder design language overlays (BS 5.3 color modes)
+[data-bs-theme="dark"] {
+  --bs-body-bg:       #212121;
+  --bs-body-color:    #dadada;
+  --bs-secondary-bg:  #424242;
+  --bs-tertiary-bg:   #4f4f4f;
+  --bs-primary:       #42a5f5;
+  --bs-link-color:    #42a5f5;
+  --bs-border-color:  #424242;
+}
+
+// Coder feel: flat, tight, text-forward.
+.navbar-brand { font-weight: 700; letter-spacing: .2px; }
+.card { box-shadow: none; }
+code, kbd, pre { font-feature-settings: "liga" 0; }
+a { transition: color .15s ease, opacity .15s ease; }
+
+// Tighter sidebar — Coder is dense.
+.bslib-sidebar-layout > .sidebar { font-size: 0.95rem; }
