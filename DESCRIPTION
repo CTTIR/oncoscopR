@@ -14,13 +14,12 @@ Description: Reads tumour-documentation spreadsheets from haematological tumour
     interactive Shiny dashboard for auditor live evaluation. Includes a fully
     synthetic example cohort for demonstration and testing.
 License: MIT + file LICENSE
-URL: https://github.com/r-heller/oncoscopR,
-    https://r-heller.github.io/oncoscopR/
-BugReports: https://github.com/r-heller/oncoscopR/issues
+URL: https://github.com/CTTIR/oncoscopR,
+    https://cttir.github.io/oncoscopR/
+BugReports: https://github.com/CTTIR/oncoscopR/issues
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Depends:
     R (>= 4.1)
 Imports:
@@ -54,3 +53,4 @@ Suggests:
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/Needs/website: r-lib/pkgdown, CTTIR/themakR
+Config/roxygen2/version: 8.0.0

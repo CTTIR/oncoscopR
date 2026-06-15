@@ -21,14 +21,14 @@ A data frame with cleaned names and a \code{"source_label"} attribute.
 }
 \description{
 Reads the therapy-block sheet — typically the canonical name
-\code{Komplexe Chemotherapie} — from the workbook. If the sheet is genuinely
+\verb{Komplexe Chemotherapie} — from the workbook. If the sheet is genuinely
 missing, returns a 0-row data frame with a \code{"source_label"} attribute
 describing the situation; the dashboard surfaces this in the therapy tab.
 }
 \seealso{
 Other readers:
-\code{\link{onc_read_cohort}()},
-\code{\link{onc_read_diagnostics}()},
-\code{\link{onc_read_tumorboard}()}
+\code{\link[=onc_read_cohort]{onc_read_cohort()}},
+\code{\link[=onc_read_diagnostics]{onc_read_diagnostics()}},
+\code{\link[=onc_read_tumorboard]{onc_read_tumorboard()}}
 }
 \concept{readers}

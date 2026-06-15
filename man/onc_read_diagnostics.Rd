@@ -20,13 +20,13 @@ A data frame with cleaned names and a \code{"source_label"} attribute.
 0-row if no diagnostics sheet exists.
 }
 \description{
-Reads the diagnostics sheet — canonical name \code{Komplexe Diagnostik}.
+Reads the diagnostics sheet — canonical name \verb{Komplexe Diagnostik}.
 If missing, returns a 0-row data frame with a \code{"source_label"} attribute.
 }
 \seealso{
 Other readers:
-\code{\link{onc_read_cohort}()},
-\code{\link{onc_read_therapy}()},
-\code{\link{onc_read_tumorboard}()}
+\code{\link[=onc_read_cohort]{onc_read_cohort()}},
+\code{\link[=onc_read_therapy]{onc_read_therapy()}},
+\code{\link[=onc_read_tumorboard]{onc_read_tumorboard()}}
 }
 \concept{readers}

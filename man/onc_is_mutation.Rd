@@ -23,7 +23,7 @@ onc_is_mutation(onc_alteration_type(c("TP53", "del(17p)")))
 }
 \seealso{
 Other alteration:
-\code{\link{onc_alteration_type}()},
-\code{\link{onc_normalize_alteration}()}
+\code{\link[=onc_alteration_type]{onc_alteration_type()}},
+\code{\link[=onc_normalize_alteration]{onc_normalize_alteration()}}
 }
 \concept{alteration}

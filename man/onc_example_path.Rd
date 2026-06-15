@@ -22,8 +22,4 @@ button is clicked, and in the documentation examples.
 onc_example_path()
 if (interactive()) onc_read_cohort(onc_example_path())
 }
-\seealso{
-Other data:
-\code{\link{onc_run_app}}
-}
 \concept{data}

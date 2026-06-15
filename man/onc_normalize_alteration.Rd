@@ -21,7 +21,7 @@ onc_normalize_alteration(c("TP53 Mutation", "  NRAS  Mut", "del(17p)"))
 }
 \seealso{
 Other alteration:
-\code{\link{onc_alteration_type}()},
-\code{\link{onc_is_mutation}()}
+\code{\link[=onc_alteration_type]{onc_alteration_type()}},
+\code{\link[=onc_is_mutation]{onc_is_mutation()}}
 }
 \concept{alteration}

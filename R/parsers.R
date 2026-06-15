@@ -107,7 +107,7 @@ onc_prepare_therapy_blocks <- function(df) {
 #'
 #' @return Data frame with `patient`, `diagnose`, `datum`, `primaerfall`,
 #'   `patientenfall`, `jahr`, `monat_sort`, plus the component columns
-#'   (Morphologie, Immunphänotypisierung, Zytogenetik, Molekulargenetik).
+#'   (Morphologie, Immunphaenotypisierung, Zytogenetik, Molekulargenetik).
 #'   Empty input returns a 0-row tibble.
 #'
 #' @family parsers
@@ -187,7 +187,7 @@ onc_prepare_diagnostic_blocks <- function(df) {
 
 #' Pivot diagnostic-block components into long form
 #'
-#' Detects component columns (Morphologie/Immunphänotypisierung/Zytogenetik/
+#' Detects component columns (Morphologie/Immunphaenotypisierung/Zytogenetik/
 #' Molekulargenetik), pivots them long, normalises the display label, and
 #' filters to positive entries only.
 #'
@@ -228,7 +228,7 @@ onc_prepare_diagnostic_blocks <- function(df) {
 
   long$diagnostik_bereich <- dplyr::case_when(
     grepl("morph", long$diagnostik_bereich, ignore.case = TRUE) ~ "Morphologie",
-    grepl("immun", long$diagnostik_bereich, ignore.case = TRUE) ~ "Immunphänotypisierung",
+    grepl("immun", long$diagnostik_bereich, ignore.case = TRUE) ~ "Immunph\u00e4notypisierung",
     grepl("zyto|cyto", long$diagnostik_bereich, ignore.case = TRUE) ~ "Zytogenetik",
     grepl("molekular|molecular|genetik", long$diagnostik_bereich, ignore.case = TRUE) ~ "Molekulargenetik",
     TRUE ~ long$diagnostik_bereich
@@ -243,7 +243,7 @@ onc_prepare_diagnostic_blocks <- function(df) {
 #' the oncoprint tile plot.
 #'
 #' Unlike the legacy v5 implementation, this function does not call
-#' [shiny::validate()] — packaged functions must work outside Shiny. If the
+#' [shiny::validate()] -- packaged functions must work outside Shiny. If the
 #' required source column is missing, the function raises a `cli::cli_abort`
 #' so the server layer can wrap the message with `validate(need(...))`.
 #'
@@ -275,11 +275,13 @@ onc_parse_oncoprint <- function(df, remove_negative = TRUE) {
 
   if (is.null(result_col)) {
     cli::cli_abort(
-      "Column {.field krankheitsspezifische_hematol_resultate} not found."
+      "Column {.field krankheitsspezifische_hematol_resultate} not found.",
+      call = rlang::caller_env()
     )
   }
   if (is.null(diag_col)) {
-    cli::cli_abort("No diagnosis/entity column found.")
+    cli::cli_abort("No diagnosis/entity column found.",
+                   call = rlang::caller_env())
   }
 
   .alteration_pipeline(
@@ -316,10 +318,12 @@ onc_parse_cytogenetics <- function(df, remove_negative = TRUE) {
                                  "patienten_id", "id"))
 
   if (is.null(cyto_col)) {
-    cli::cli_abort("Column {.field zytogenetik} not found.")
+    cli::cli_abort("Column {.field zytogenetik} not found.",
+                   call = rlang::caller_env())
   }
   if (is.null(diag_col)) {
-    cli::cli_abort("No diagnosis/entity column found.")
+    cli::cli_abort("No diagnosis/entity column found.",
+                   call = rlang::caller_env())
   }
 
   .alteration_pipeline(
@@ -355,8 +359,10 @@ onc_parse_cytogenetics <- function(df, remove_negative = TRUE) {
     ))
   }
 
+  # Split on commas and newlines only -- semicolons inside parens (e.g.
+  # "t(11;14)") are part of the cytogenetic notation, not a separator.
   tmp$raw_full <- stringr::str_replace_all(tmp$raw_full, "\\n|\\r|/", ",")
-  tmp <- tidyr::separate_rows(tmp, "raw_full", sep = ",|;")
+  tmp <- tidyr::separate_rows(tmp, "raw_full", sep = ",")
   tmp$raw_full <- trimws(tmp$raw_full)
   tmp$alteration <- onc_normalize_alteration(tmp$raw_full)
   tmp$alteration_class <- onc_alteration_type(tmp$raw_full)

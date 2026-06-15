@@ -23,8 +23,8 @@ Same logic as \code{\link[=onc_parse_oncoprint]{onc_parse_oncoprint()}} but cons
 }
 \seealso{
 Other parsers:
-\code{\link{onc_parse_oncoprint}()},
-\code{\link{onc_prepare_diagnostic_blocks}()},
-\code{\link{onc_prepare_therapy_blocks}()}
+\code{\link[=onc_parse_oncoprint]{onc_parse_oncoprint()}},
+\code{\link[=onc_prepare_diagnostic_blocks]{onc_prepare_diagnostic_blocks()}},
+\code{\link[=onc_prepare_therapy_blocks]{onc_prepare_therapy_blocks()}}
 }
 \concept{parsers}

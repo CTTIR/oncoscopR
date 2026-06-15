@@ -12,11 +12,7 @@
 #'   if no candidate matched. Never returns `character(0)`.
 #'
 #' @family helpers
-#' @export
-#' @examples
-#' df <- data.frame(diagnose = "AML", kodierung = "C92.0")
-#' .find_col_example <- function() NULL
-#' # find_col_internal is internal; users typically call onc_read_* instead
+#' @keywords internal
 .find_col <- function(df, candidates) {
   hits <- candidates[candidates %in% names(df)]
   if (length(hits) == 0L) return(NULL)

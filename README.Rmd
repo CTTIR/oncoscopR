@@ -13,11 +13,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-# oncoscopR <a href="https://r-heller.github.io/oncoscopR/"><img src="man/figures/logo.png" align="right" height="138" /></a>
+# oncoscopR <a href="https://cttir.github.io/oncoscopR/"><img src="man/figures/logo.png" align="right" height="138" /></a>
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/r-heller/oncoscopR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/r-heller/oncoscopR/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/r-heller/oncoscopR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/r-heller/oncoscopR)
+[![R-CMD-check](https://github.com/CTTIR/oncoscopR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CTTIR/oncoscopR/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/CTTIR/oncoscopR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/CTTIR/oncoscopR)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
@@ -42,7 +42,7 @@ explored without any real patient data. Real data is never committed.
 
 ```r
 # install.packages("pak")
-pak::pak("r-heller/oncoscopR")
+pak::pak("CTTIR/oncoscopR")
 ```
 
 ## Quick start

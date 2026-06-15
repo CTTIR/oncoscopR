@@ -36,7 +36,7 @@ onc_alteration_type(c(
 }
 \seealso{
 Other alteration:
-\code{\link{onc_is_mutation}()},
-\code{\link{onc_normalize_alteration}()}
+\code{\link[=onc_is_mutation]{onc_is_mutation()}},
+\code{\link[=onc_normalize_alteration]{onc_normalize_alteration()}}
 }
 \concept{alteration}

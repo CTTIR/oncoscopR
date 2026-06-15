@@ -12,7 +12,7 @@ onc_prepare_diagnostic_blocks(df)
 \value{
 Data frame with \code{patient}, \code{diagnose}, \code{datum}, \code{primaerfall},
 \code{patientenfall}, \code{jahr}, \code{monat_sort}, plus the component columns
-(Morphologie, Immunphänotypisierung, Zytogenetik, Molekulargenetik).
+(Morphologie, Immunphaenotypisierung, Zytogenetik, Molekulargenetik).
 Empty input returns a 0-row tibble.
 }
 \description{
@@ -20,8 +20,8 @@ Prepare OPS-1-941 complex-diagnostics blocks
 }
 \seealso{
 Other parsers:
-\code{\link{onc_parse_cytogenetics}()},
-\code{\link{onc_parse_oncoprint}()},
-\code{\link{onc_prepare_therapy_blocks}()}
+\code{\link[=onc_parse_cytogenetics]{onc_parse_cytogenetics()}},
+\code{\link[=onc_parse_oncoprint]{onc_parse_oncoprint()}},
+\code{\link[=onc_prepare_therapy_blocks]{onc_prepare_therapy_blocks()}}
 }
 \concept{parsers}

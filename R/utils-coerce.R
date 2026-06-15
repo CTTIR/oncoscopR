@@ -112,7 +112,9 @@
     "tumorkonferenz_datum", "last_follow_up"
   ))
   if (!is.null(date_col)) {
-    df$behandlungsjahr <- lubridate::year(.safe_date(df[[date_col]]))
+    df$behandlungsjahr <- as.integer(
+      lubridate::year(.safe_date(df[[date_col]]))
+    )
   } else {
     df$behandlungsjahr <- NA_integer_
   }

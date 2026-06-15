@@ -21,8 +21,8 @@ contract is the same in both cases so downstream \code{bind_rows} is safe.
 }
 \seealso{
 Other readers:
-\code{\link{onc_read_cohort}()},
-\code{\link{onc_read_diagnostics}()},
-\code{\link{onc_read_therapy}()}
+\code{\link[=onc_read_cohort]{onc_read_cohort()}},
+\code{\link[=onc_read_diagnostics]{onc_read_diagnostics()}},
+\code{\link[=onc_read_therapy]{onc_read_therapy()}}
 }
 \concept{readers}

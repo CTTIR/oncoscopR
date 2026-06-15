@@ -19,12 +19,8 @@ the app starts empty; the "Beispieldaten laden" button loads the
 synthetic example cohort.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 onc_run_app()
 \dontshow{\}) # examplesIf}
-}
-\seealso{
-Other app:
-\code{\link{onc_example_path}()}
 }
 \concept{app}

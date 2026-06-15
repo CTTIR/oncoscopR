@@ -4,6 +4,7 @@
 ^\.git$
 ^\.gitignore$
 ^\.audit$
+^\***REMOVED***$
 ^\.archive$
 ^data-raw$
 ^cran-comments\.md$
@@ -12,6 +13,7 @@
 ^pkgdown$
 ^\.covrignore$
 ^codecov\.yml$
+^\.github$
 ^\.DS_Store$
 ^README\.Rmd$
 ^README_files$

@@ -38,8 +38,8 @@ if (interactive()) {
 }
 \seealso{
 Other readers:
-\code{\link{onc_read_diagnostics}()},
-\code{\link{onc_read_therapy}()},
-\code{\link{onc_read_tumorboard}()}
+\code{\link[=onc_read_diagnostics]{onc_read_diagnostics()}},
+\code{\link[=onc_read_therapy]{onc_read_therapy()}},
+\code{\link[=onc_read_tumorboard]{onc_read_tumorboard()}}
 }
 \concept{readers}

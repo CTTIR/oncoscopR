@@ -24,3 +24,15 @@
 #' @importFrom utils read.csv write.csv
 ## usethis namespace: end
 NULL
+
+# These imports are consumed by inst/shiny/oncoscopR/app.R, which R CMD check
+# does not scan. Declaring one symbol from each silences the
+# "Namespaces in Imports field not imported from" note without changing
+# behaviour.
+#' @importFrom DT renderDT
+#' @importFrom bslib bs_theme
+#' @importFrom bsicons bs_icon
+#' @importFrom ggplot2 ggplot
+#' @importFrom scales percent
+#' @importFrom survival survfit
+NULL

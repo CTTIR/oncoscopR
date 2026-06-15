@@ -25,16 +25,18 @@ A fully synthetic example cohort is bundled and accessible via
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/r-heller/oncoscopR}
-  \item \url{https://r-heller.github.io/oncoscopR/}
-  \item Report bugs at \url{https://github.com/r-heller/oncoscopR/issues}
+  \item \url{https://github.com/CTTIR/oncoscopR}
+  \item \url{https://cttir.github.io/oncoscopR/}
+  \item Report bugs at \url{https://github.com/CTTIR/oncoscopR/issues}
 }
+
 }
 \author{
 \strong{Maintainer}: Raban Heller \email{raban.heller@outlook.com} (\href{https://orcid.org/0000-0001-8006-9742}{ORCID})
 
 Authors:
 \itemize{
+  \item Raban Heller \email{raban.heller@outlook.com} (\href{https://orcid.org/0000-0001-8006-9742}{ORCID})
   \item Hanno Witte
 }
 

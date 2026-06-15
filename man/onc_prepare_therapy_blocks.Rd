@@ -24,8 +24,8 @@ Patient/Datum/Zyklus/Protokoll combinations when no OPS column exists.
 }
 \seealso{
 Other parsers:
-\code{\link{onc_parse_cytogenetics}()},
-\code{\link{onc_parse_oncoprint}()},
-\code{\link{onc_prepare_diagnostic_blocks}()}
+\code{\link[=onc_parse_cytogenetics]{onc_parse_cytogenetics()}},
+\code{\link[=onc_parse_oncoprint]{onc_parse_oncoprint()}},
+\code{\link[=onc_prepare_diagnostic_blocks]{onc_prepare_diagnostic_blocks()}}
 }
 \concept{parsers}

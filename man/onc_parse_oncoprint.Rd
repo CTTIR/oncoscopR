@@ -25,14 +25,14 @@ the oncoprint tile plot.
 }
 \details{
 Unlike the legacy v5 implementation, this function does not call
-\code{\link[shiny:validate]{shiny::validate()}} — packaged functions must work outside Shiny. If the
+\code{\link[shiny:validate]{shiny::validate()}} -- packaged functions must work outside Shiny. If the
 required source column is missing, the function raises a \code{cli::cli_abort}
 so the server layer can wrap the message with \code{validate(need(...))}.
 }
 \seealso{
 Other parsers:
-\code{\link{onc_parse_cytogenetics}()},
-\code{\link{onc_prepare_diagnostic_blocks}()},
-\code{\link{onc_prepare_therapy_blocks}()}
+\code{\link[=onc_parse_cytogenetics]{onc_parse_cytogenetics()}},
+\code{\link[=onc_prepare_diagnostic_blocks]{onc_prepare_diagnostic_blocks()}},
+\code{\link[=onc_prepare_therapy_blocks]{onc_prepare_therapy_blocks()}}
 }
 \concept{parsers}
