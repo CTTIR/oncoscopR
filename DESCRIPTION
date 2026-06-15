@@ -46,9 +46,12 @@ Suggests:
     openxlsx,
     pkgdown,
     rmarkdown,
+    sass,
+    shiny.i18n,
     shinytest2,
     survminer,
     testthat (>= 3.0.0),
+    thematic,
     withr
 VignetteBuilder: knitr
 Config/testthat/edition: 3

@@ -54,9 +54,20 @@ if (requireNamespace("thematic", quietly = TRUE)) {
 }
 ggplot2::theme_set(ggplot2::theme_minimal(base_size = 13))
 
+# ---- i18n (DE default, EN toggle) ------------------------------------------
+.app_dir <- system.file("shiny", "oncoscopR", package = "oncoscopR")
+if (!nzchar(.app_dir)) .app_dir <- getwd()
+.i18n_path <- file.path(.app_dir, "translations", "translation.json")
+i18n <- shiny.i18n::Translator$new(translation_json_path = .i18n_path)
+i18n$set_translation_language("de")
+
+# Tiny helper: translate fallback to original if a key is missing.
+.tr <- function(s) i18n$t(s)
+
 ui <- shiny::fluidPage(
   theme = .coder_theme(),
-  title = "Hämatologisches Tumorzentrum – Auditor-Auswertung",
+  title = .tr("Hämatologisches Tumorzentrum – Auditor-Auswertung"),
+  shiny.i18n::usei18n(i18n),
   bslib::layout_sidebar(
     sidebar = bslib::sidebar(
       width = 390,
@@ -68,91 +79,101 @@ ui <- shiny::fluidPage(
           height = "32",
           style = "display:inline-block;"
         ),
-        shiny::h4("Auditor-App", class = "m-0")
+        shiny::h4(.tr("Auditor-App"), class = "m-0")
+      ),
+
+      # --- Language toggle DE / EN -------------------------------------
+      shiny::div(
+        class = "mb-2",
+        shiny::radioButtons(
+          "lang", .tr("Sprache / Language"),
+          choices = c("Deutsch" = "de", "English" = "en"),
+          selected = "de", inline = TRUE
+        )
       ),
 
       # --- sanctioned addition: data source -----------------------------
       bslib::card(
-        bslib::card_header("Datenquelle"),
+        bslib::card_header(.tr("Datenquelle")),
         shiny::fileInput(
           "cohort_file",
-          "Kohorten-Excel (.xlsx) hochladen",
+          .tr("Kohorten-Excel (.xlsx) hochladen"),
           accept = c(".xlsx", ".xls",
                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         ),
         shiny::fileInput(
           "tumorboard_file",
-          "Optional: Tumorboardbeschlüsse CSV laden",
+          .tr("Optional: Tumorboardbeschlüsse CSV laden"),
           accept = c(".csv", "text/csv")
         ),
         shiny::actionButton(
           "load_example",
-          "Beispieldaten laden",
+          .tr("Beispieldaten laden"),
           class = "btn-secondary"
         )
       ),
       # ------------------------------------------------------------------
 
       shiny::verbatimTextOutput("path_info"),
-      shiny::actionButton("reload", "Daten neu einlesen", class = "btn-primary"),
+      shiny::actionButton("reload", .tr("Daten neu einlesen"), class = "btn-primary"),
       shiny::br(), shiny::br(),
       shiny::helpText(
         "Datenquelle: hochgeladene Excel-Datei oder bundle-Beispieldaten. ",
         "Keine Daten werden außerhalb der Session gespeichert."
       ),
       shiny::hr(),
-      shiny::h5("Globale Filter"),
+      shiny::h5(.tr("Globale Filter")),
       shiny::uiOutput("global_filters"),
       shiny::hr(),
-      shiny::h5("Freitextsuche"),
+      shiny::h5(.tr("Freitextsuche")),
       shiny::textInput("search_text",
-                       "Suche in Name, Diagnose, Kodierung, Therapie",
+                       .tr("Suche in Name, Diagnose, Kodierung, Therapie"),
                        value = ""),
       shiny::hr(),
       shiny::downloadButton("download_filtered",
-                            "Gefilterte Patiententabelle CSV")
+                            .tr("Gefilterte Patiententabelle CSV"))
     ),
     shiny::mainPanel(
       shiny::tabsetPanel(
         shiny::tabPanel(
-          "Auditor-Dashboard",
+          .tr("Auditor-Dashboard"),
           shiny::br(),
           bslib::layout_column_wrap(
             width = 1/4,
-            bslib::value_box("Patienten gesamt", shiny::textOutput("n_total"),
+            bslib::value_box(.tr("Patienten gesamt"), shiny::textOutput("n_total"),
                              showcase = bsicons::bs_icon("people")),
-            bslib::value_box("Primärfälle", shiny::textOutput("n_primaer"),
+            bslib::value_box(.tr("Primärfälle"), shiny::textOutput("n_primaer"),
                              showcase = bsicons::bs_icon("clipboard2-pulse")),
-            bslib::value_box("Patientenfälle", shiny::textOutput("n_patientenfall"),
+            bslib::value_box(.tr("Patientenfälle"), shiny::textOutput("n_patientenfall"),
                              showcase = bsicons::bs_icon("hospital")),
-            bslib::value_box("Psychoonkologie", shiny::textOutput("n_psycho"),
+            bslib::value_box(.tr("Psychoonkologie"), shiny::textOutput("n_psycho"),
                              showcase = bsicons::bs_icon("heart-pulse"))
           ),
           shiny::br(),
           shiny::fluidRow(
-            shiny::column(6, bslib::card(bslib::card_header("Fälle nach Diagnose/Kodierung"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Fälle nach Diagnose/Kodierung")),
                                          shiny::plotOutput("plot_diagnosis", height = 430))),
-            shiny::column(6, bslib::card(bslib::card_header("Jährliche Fallzahlen"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Jährliche Fallzahlen")),
                                          shiny::plotOutput("plot_year", height = 430)))
           ),
           shiny::br(),
           shiny::fluidRow(
-            shiny::column(6, bslib::card(bslib::card_header("Qualitäts-/Versorgungsindikatoren"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Qualitäts-/Versorgungsindikatoren")),
                                          DT::DTOutput("indicator_table"))),
-            shiny::column(6, bslib::card(bslib::card_header("Schnellfragen für Auditoren"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Schnellfragen für Auditoren")),
                                          shiny::uiOutput("quick_questions")))
           )
         ),
         shiny::tabPanel(
-          "Einfache Abfragen",
+          .tr("Einfache Abfragen"),
           shiny::br(),
           shiny::fluidRow(
             shiny::column(
               4,
               bslib::card(
-                bslib::card_header("Auditorfrage auswählen"),
+                bslib::card_header(.tr("Auditorfrage auswählen")),
                 shiny::selectInput(
-                  "simple_question", "Vordefinierte Frage",
+                  "simple_question", .tr("Vordefinierte Frage"),
                   choices = c(
                     "Psychoonkologisches Screening" = "psycho",
                     "HIV/Hepatitis Screening" = "hivhep",
@@ -169,236 +190,240 @@ ui <- shiny::fluidPage(
                 ),
                 shiny::uiOutput("simple_query_ui"),
                 shiny::checkboxInput("simple_only_unique",
-                                     "Nur eindeutige Namen zählen", FALSE),
+                                     .tr("Nur eindeutige Namen zählen"), FALSE),
                 shiny::actionButton("run_simple_query",
-                                    "Abfrage ausführen", class = "btn-primary"),
+                                    .tr("Abfrage ausführen"), class = "btn-primary"),
                 shiny::br(), shiny::br(),
-                shiny::downloadButton("download_simple_query", "Trefferliste CSV")
+                shiny::downloadButton("download_simple_query", .tr("Trefferliste CSV"))
               )
             ),
             shiny::column(
               8,
-              bslib::value_box("Ergebnis", shiny::textOutput("simple_query_result"),
+              bslib::value_box(.tr("Ergebnis"), shiny::textOutput("simple_query_result"),
                                showcase = bsicons::bs_icon("search")),
               shiny::br(),
-              bslib::card(bslib::card_header("Zusammenfassung"),
+              bslib::card(bslib::card_header(.tr("Zusammenfassung")),
                           DT::DTOutput("simple_query_summary")),
               shiny::br(),
-              bslib::card(bslib::card_header("Trefferliste"),
+              bslib::card(bslib::card_header(.tr("Trefferliste")),
                           DT::DTOutput("simple_query_table"))
             )
           )
         ),
         shiny::tabPanel(
-          "Patientenliste", shiny::br(),
-          shiny::helpText("Eine Zeile auswählen: Der Patient wird automatisch in den Tab 'Tumorboardbeschlüsse' übernommen."),
+          .tr("Patientenliste"), shiny::br(),
+          shiny::helpText(.tr("Eine Zeile auswählen: Der Patient wird automatisch in den Tab 'Tumorboardbeschlüsse' übernommen.")),
           DT::DTOutput("table")
         ),
         shiny::tabPanel(
-          "Tumorboardbeschlüsse", shiny::br(),
+          .tr("Tumorboardbeschlüsse"), shiny::br(),
           shiny::fluidRow(
             shiny::column(
               4,
               bslib::card(
-                bslib::card_header("Beschluss für Patienten erfassen"),
+                bslib::card_header(.tr("Beschluss für Patienten erfassen")),
                 shiny::verbatimTextOutput("tb_storage_info"),
                 shiny::uiOutput("tb_patient_ui"),
-                shiny::dateInput("tb_date", "Datum Tumorboard",
+                shiny::dateInput("tb_date", .tr("Datum Tumorboard"),
                                  value = Sys.Date(),
                                  format = "dd.mm.yyyy", language = "de"),
                 shiny::textAreaInput("tb_decision",
-                                     "Tumorboardbeschluss / Empfehlung",
+                                     .tr("Tumorboardbeschluss / Empfehlung"),
                                      value = "", rows = 7,
-                                     placeholder = "z.B. Vorstellung Referenzpathologie, Therapieempfehlung, Studienprüfung, Re-Staging, supportive Maßnahmen ..."),
+                                     placeholder = .tr("z.B. Vorstellung Referenzpathologie, Therapieempfehlung, Studienprüfung, Re-Staging, supportive Maßnahmen ...")),
                 shiny::textInput("tb_responsible",
-                                 "Verantwortlich / Eintrag durch", value = ""),
+                                 .tr("Verantwortlich / Eintrag durch"), value = ""),
                 shiny::actionButton("save_tb",
-                                    "Beschluss speichern", class = "btn-primary"),
+                                    .tr("Beschluss speichern"), class = "btn-primary"),
                 shiny::br(), shiny::br(),
                 shiny::downloadButton("download_tb",
-                                      "Tumorboardbeschlüsse CSV")
+                                      .tr("Tumorboardbeschlüsse CSV"))
               )
             ),
             shiny::column(
               8,
               bslib::layout_column_wrap(
                 width = 1/3,
-                bslib::value_box("Beschlüsse gesamt", shiny::textOutput("tb_n_total")),
-                bslib::value_box("Beschlüsse Patient", shiny::textOutput("tb_n_patient")),
-                bslib::value_box("Patienten mit Beschluss", shiny::textOutput("tb_n_patients"))
+                bslib::value_box(.tr("Beschlüsse gesamt"), shiny::textOutput("tb_n_total")),
+                bslib::value_box(.tr("Beschlüsse Patient"), shiny::textOutput("tb_n_patient")),
+                bslib::value_box(.tr("Patienten mit Beschluss"), shiny::textOutput("tb_n_patients"))
               ),
               shiny::br(),
-              bslib::card(bslib::card_header("Beschlüsse des ausgewählten Patienten"),
+              bslib::card(bslib::card_header(.tr("Beschlüsse des ausgewählten Patienten")),
                           DT::DTOutput("tb_patient_table")),
               shiny::br(),
-              bslib::card(bslib::card_header("Alle dokumentierten Tumorboardbeschlüsse"),
+              bslib::card(bslib::card_header(.tr("Alle dokumentierten Tumorboardbeschlüsse")),
                           DT::DTOutput("tb_all_table"))
             )
           )
         ),
         shiny::tabPanel(
-          "Kaplan–Meier", shiny::br(),
+          .tr("Kaplan–Meier"), shiny::br(),
           shiny::fluidRow(
             shiny::column(4, bslib::card(
-              bslib::card_header("KM-Einstellungen"),
+              bslib::card_header(.tr("KM-Einstellungen")),
               shiny::uiOutput("km_ui"),
-              shiny::actionButton("run_km", "KM aktualisieren", class = "btn-primary"),
+              shiny::actionButton("run_km", .tr("KM aktualisieren"), class = "btn-primary"),
               shiny::br(), shiny::br(),
-              shiny::downloadButton("download_km_plot", "KM Plot PNG")
+              shiny::downloadButton("download_km_plot", .tr("KM Plot PNG"))
             )),
             shiny::column(8, bslib::card(
-              bslib::card_header("Kaplan–Meier Plot"),
+              bslib::card_header(.tr("Kaplan–Meier Plot")),
               shiny::plotOutput("km_plot", height = 560)
             ))
           )
         ),
         shiny::tabPanel(
-          "OPS 8-544 Therapieblöcke", shiny::br(),
+          .tr("OPS 8-544 Therapieblöcke"), shiny::br(),
           shiny::fluidRow(
             shiny::column(4, bslib::card(
-              bslib::card_header("Filter Therapieblöcke"),
+              bslib::card_header(.tr("Filter Therapieblöcke")),
               shiny::verbatimTextOutput("therapy_source_info"),
               shiny::uiOutput("therapy_filters"),
               shiny::br(),
-              shiny::downloadButton("download_therapy_blocks", "Therapieblöcke CSV")
+              shiny::downloadButton("download_therapy_blocks", .tr("Therapieblöcke CSV"))
             )),
             shiny::column(8, bslib::layout_column_wrap(
               width = 1/3,
-              bslib::value_box("OPS-8-544-Blöcke", shiny::textOutput("n_therapy_blocks")),
-              bslib::value_box("Patienten", shiny::textOutput("n_therapy_patients")),
-              bslib::value_box("Therapieprotokolle", shiny::textOutput("n_therapy_protocols"))
+              bslib::value_box(.tr("OPS-8-544-Blöcke"), shiny::textOutput("n_therapy_blocks")),
+              bslib::value_box(.tr("Patienten"), shiny::textOutput("n_therapy_patients")),
+              bslib::value_box(.tr("Therapieprotokolle"), shiny::textOutput("n_therapy_protocols"))
             ))
           ),
           shiny::br(),
           shiny::fluidRow(
-            shiny::column(6, bslib::card(bslib::card_header("Wie viele Blöcke von welcher Therapie?"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Wie viele Blöcke von welcher Therapie?")),
                                          DT::DTOutput("therapy_protocol_table"))),
-            shiny::column(6, bslib::card(bslib::card_header("Blöcke nach Diagnose"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Blöcke nach Diagnose")),
                                          DT::DTOutput("therapy_diagnosis_table")))
           ),
           shiny::br(),
           shiny::fluidRow(
-            shiny::column(6, bslib::card(bslib::card_header("Blöcke je Therapieprotokoll"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Blöcke je Therapieprotokoll")),
                                          shiny::plotOutput("therapy_protocol_plot", height = 520))),
-            shiny::column(6, bslib::card(bslib::card_header("Monatliche OPS-8-544-Blöcke"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Monatliche OPS-8-544-Blöcke")),
                                          shiny::plotOutput("therapy_month_plot", height = 520)))
           ),
           shiny::br(),
-          bslib::card(bslib::card_header("Detailtabelle der gezählten Blöcke"),
+          bslib::card(bslib::card_header(.tr("Detailtabelle der gezählten Blöcke")),
                       DT::DTOutput("therapy_block_details"))
         ),
         shiny::tabPanel(
-          "OPS 1-941 Diagnostik", shiny::br(),
+          .tr("OPS 1-941 Diagnostik"), shiny::br(),
           shiny::fluidRow(
             shiny::column(4, bslib::card(
-              bslib::card_header("Filter komplexe Diagnostik"),
+              bslib::card_header(.tr("Filter komplexe Diagnostik")),
               shiny::verbatimTextOutput("diagnostic_source_info"),
               shiny::uiOutput("diagnostic_filters"),
               shiny::br(),
               shiny::downloadButton("download_diagnostic_blocks",
-                                    "Komplexe Diagnostik CSV")
+                                    .tr("Komplexe Diagnostik CSV"))
             )),
             shiny::column(8, bslib::layout_column_wrap(
               width = 1/3,
-              bslib::value_box("OPS-1-941-Fälle", shiny::textOutput("n_diagnostic_blocks")),
-              bslib::value_box("Patienten", shiny::textOutput("n_diagnostic_patients")),
-              bslib::value_box("Diagnosen", shiny::textOutput("n_diagnostic_diagnoses"))
+              bslib::value_box(.tr("OPS-1-941-Fälle"), shiny::textOutput("n_diagnostic_blocks")),
+              bslib::value_box(.tr("Patienten"), shiny::textOutput("n_diagnostic_patients")),
+              bslib::value_box(.tr("Diagnosen"), shiny::textOutput("n_diagnostic_diagnoses"))
             ))
           ),
           shiny::br(),
           shiny::fluidRow(
-            shiny::column(6, bslib::card(bslib::card_header("Komplexe Diagnostik nach Bereich"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Komplexe Diagnostik nach Bereich")),
                                          DT::DTOutput("diagnostic_component_table"))),
-            shiny::column(6, bslib::card(bslib::card_header("Komplexe Diagnostik nach Diagnose"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Komplexe Diagnostik nach Diagnose")),
                                          DT::DTOutput("diagnostic_diagnosis_table")))
           ),
           shiny::br(),
           shiny::fluidRow(
-            shiny::column(6, bslib::card(bslib::card_header("Diagnostikbereiche"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Diagnostikbereiche")),
                                          shiny::plotOutput("diagnostic_component_plot", height = 520))),
-            shiny::column(6, bslib::card(bslib::card_header("Monatliche OPS-1-941-Fälle"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Monatliche OPS-1-941-Fälle")),
                                          shiny::plotOutput("diagnostic_month_plot", height = 520)))
           ),
           shiny::br(),
-          bslib::card(bslib::card_header("Detailtabelle der komplexen Diagnostiken"),
+          bslib::card(bslib::card_header(.tr("Detailtabelle der komplexen Diagnostiken")),
                       DT::DTOutput("diagnostic_block_details"))
         ),
         shiny::tabPanel(
-          "Oncoprint Mutationen", shiny::br(),
+          .tr("Oncoprint Mutationen"), shiny::br(),
           shiny::fluidRow(
             shiny::column(4, bslib::card(
-              bslib::card_header("Oncoprint-Filter"),
-              shiny::helpText("Quelle: Spalte 'Krankheitsspezifische hematol Resultate'. NA/negative Befunde werden nicht geplottet. Deletionen, Zugewinne, Translokationen/Rearrangements/Brüche, Loss und komplexer Karyotyp werden nur tabellarisch aufgeführt."),
+              bslib::card_header(.tr("Oncoprint-Filter")),
+              shiny::helpText(.tr("Quelle: Spalte 'Krankheitsspezifische hematol Resultate'. NA/negative Befunde werden nicht geplottet. Deletionen, Zugewinne, Translokationen/Rearrangements/Brüche, Loss und komplexer Karyotyp werden nur tabellarisch aufgeführt.")),
               shiny::uiOutput("oncoprint_filters"),
-              shiny::actionButton("run_oncoprint", "Oncoprint aktualisieren", class = "btn-primary"),
+              shiny::actionButton("run_oncoprint", .tr("Oncoprint aktualisieren"), class = "btn-primary"),
               shiny::br(), shiny::br(),
-              shiny::downloadButton("download_oncoprint_data", "Mutationsdaten CSV"),
-              shiny::downloadButton("download_structural_data", "Struktur-/Zytogenetik CSV"),
-              shiny::downloadButton("download_oncoprint_plot", "Oncoprint PNG")
+              shiny::downloadButton("download_oncoprint_data", .tr("Mutationsdaten CSV")),
+              shiny::downloadButton("download_structural_data", .tr("Struktur-/Zytogenetik CSV")),
+              shiny::downloadButton("download_oncoprint_plot", .tr("Oncoprint PNG"))
             )),
             shiny::column(8, bslib::layout_column_wrap(
               width = 1/3,
-              bslib::value_box("Fälle mit Alterationen", shiny::textOutput("n_onco_patients")),
-              bslib::value_box("Alterationen", shiny::textOutput("n_onco_alterations")),
-              bslib::value_box("Entitäten", shiny::textOutput("n_onco_entities"))
+              bslib::value_box(.tr("Fälle mit Alterationen"), shiny::textOutput("n_onco_patients")),
+              bslib::value_box(.tr("Alterationen"), shiny::textOutput("n_onco_alterations")),
+              bslib::value_box(.tr("Entitäten"), shiny::textOutput("n_onco_entities"))
             ))
           ),
           shiny::br(),
-          bslib::card(bslib::card_header("Oncoprint – nur echte Mutationen/Varianten"),
+          bslib::card(bslib::card_header(.tr("Oncoprint – nur echte Mutationen/Varianten")),
                       shiny::plotOutput("oncoprint_plot", height = 720)),
           shiny::br(),
           shiny::fluidRow(
-            shiny::column(6, bslib::card(bslib::card_header("Top-Mutationen nach Entität"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Top-Mutationen nach Entität")),
                                          DT::DTOutput("oncoprint_summary_table"))),
-            shiny::column(6, bslib::card(bslib::card_header("Detaildaten Mutationen"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Detaildaten Mutationen")),
                                          DT::DTOutput("oncoprint_detail_table")))
           ),
           shiny::br(),
-          bslib::card(bslib::card_header("Strukturelle Befunde aus Mutationsspalte – nur tabellarisch"),
+          bslib::card(bslib::card_header(.tr("Strukturelle Befunde aus Mutationsspalte – nur tabellarisch")),
                       DT::DTOutput("oncoprint_structural_table"))
         ),
         shiny::tabPanel(
-          "Zytogenetik", shiny::br(),
+          .tr("Zytogenetik"), shiny::br(),
           shiny::fluidRow(
             shiny::column(4, bslib::card(
-              bslib::card_header("Zytogenetik-Filter"),
-              shiny::helpText("Quelle: separate Spalte 'Zytogenetik'. NA und negative Befunde werden ausgeblendet. Die Darstellung ist bewusst tabellarisch/als Balkendiagramm, nicht im Oncoprint."),
+              bslib::card_header(.tr("Zytogenetik-Filter")),
+              shiny::helpText(.tr("Quelle: separate Spalte 'Zytogenetik'. NA und negative Befunde werden ausgeblendet. Die Darstellung ist bewusst tabellarisch/als Balkendiagramm, nicht im Oncoprint.")),
               shiny::uiOutput("cyto_filters"),
-              shiny::actionButton("run_cyto", "Zytogenetik aktualisieren", class = "btn-primary"),
+              shiny::actionButton("run_cyto", .tr("Zytogenetik aktualisieren"), class = "btn-primary"),
               shiny::br(), shiny::br(),
-              shiny::downloadButton("download_cyto_data", "Zytogenetik CSV")
+              shiny::downloadButton("download_cyto_data", .tr("Zytogenetik CSV"))
             )),
             shiny::column(8, bslib::layout_column_wrap(
               width = 1/3,
-              bslib::value_box("Fälle mit Zytogenetik", shiny::textOutput("n_cyto_patients")),
-              bslib::value_box("Zytogenetik-Befunde", shiny::textOutput("n_cyto_alterations")),
-              bslib::value_box("Entitäten", shiny::textOutput("n_cyto_entities"))
+              bslib::value_box(.tr("Fälle mit Zytogenetik"), shiny::textOutput("n_cyto_patients")),
+              bslib::value_box(.tr("Zytogenetik-Befunde"), shiny::textOutput("n_cyto_alterations")),
+              bslib::value_box(.tr("Entitäten"), shiny::textOutput("n_cyto_entities"))
             ))
           ),
           shiny::br(),
           shiny::fluidRow(
-            shiny::column(6, bslib::card(bslib::card_header("Top-Zytogenetik gesamt"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Top-Zytogenetik gesamt")),
                                          shiny::plotOutput("cyto_plot", height = 520))),
-            shiny::column(6, bslib::card(bslib::card_header("Zytogenetik nach Entität"),
+            shiny::column(6, bslib::card(bslib::card_header(.tr("Zytogenetik nach Entität")),
                                          DT::DTOutput("cyto_summary_table")))
           ),
           shiny::br(),
-          bslib::card(bslib::card_header("Detaildaten Zytogenetik"),
+          bslib::card(bslib::card_header(.tr("Detaildaten Zytogenetik")),
                       DT::DTOutput("cyto_detail_table"))
         ),
         shiny::tabPanel(
-          "Boxplots", shiny::br(),
+          .tr("Boxplots"), shiny::br(),
           shiny::fluidRow(
             shiny::column(4, bslib::card(
-              bslib::card_header("Boxplot-Einstellungen"),
+              bslib::card_header(.tr("Boxplot-Einstellungen")),
               shiny::uiOutput("box_ui"),
-              shiny::actionButton("run_box", "Boxplot aktualisieren", class = "btn-primary"),
+              shiny::actionButton("run_box", .tr("Boxplot aktualisieren"), class = "btn-primary"),
               shiny::br(), shiny::br(),
-              shiny::downloadButton("download_box_plot", "Boxplot PNG")
+              shiny::downloadButton("download_box_plot", .tr("Boxplot PNG"))
             )),
-            shiny::column(8, bslib::card(bslib::card_header("Boxplot"),
+            shiny::column(8, bslib::card(bslib::card_header(.tr("Boxplot")),
                                          shiny::plotOutput("box_plot", height = 540)))
           )
+        ),
+        shiny::tabPanel(
+          "Methoden / Methods", shiny::br(),
+          shiny::uiOutput("methods_doc")
         )
       )
     )
@@ -408,22 +433,29 @@ ui <- shiny::fluidPage(
 server <- function(input, output, session) {
 
   # ------------------------------------------------------------------
+  # Language toggle (DE / EN) -- swaps DOM strings via shiny.i18n
+  # ------------------------------------------------------------------
+  shiny::observeEvent(input$lang, {
+    shiny.i18n::update_lang(input$lang)
+  }, ignoreInit = TRUE)
+
+  # ------------------------------------------------------------------
   # Data source: upload OR example button
   # ------------------------------------------------------------------
   current_path <- shiny::reactiveVal(NULL)
-  current_label <- shiny::reactiveVal("Keine Daten geladen.")
+  current_label <- shiny::reactiveVal(.tr("Keine Daten geladen."))
 
   shiny::observeEvent(input$cohort_file, {
     f <- input$cohort_file
     if (is.null(f) || !nzchar(f$datapath)) return()
     current_path(f$datapath)
-    current_label(paste0("Hochgeladen: ", f$name))
+    current_label(paste0(.tr("Hochgeladen: "), f$name))
   })
 
   shiny::observeEvent(input$load_example, {
     p <- oncoscopR::onc_example_path()
     current_path(p)
-    current_label("Beispieldaten geladen (synthetisch).")
+    current_label(.tr("Beispieldaten geladen (synthetisch)."))
   })
 
   output$path_info <- shiny::renderText({
@@ -449,7 +481,7 @@ server <- function(input, output, session) {
       p <- current_path()
       if (is.null(p)) {
         out <- data.frame()
-        attr(out, "source_label") <- "Keine Datenquelle geladen"
+        attr(out, "source_label") <- .tr("Keine Datenquelle geladen")
         return(out)
       }
       oncoscopR::onc_read_therapy(p, verbose = FALSE)
@@ -463,7 +495,7 @@ server <- function(input, output, session) {
       p <- current_path()
       if (is.null(p)) {
         out <- data.frame()
-        attr(out, "source_label") <- "Keine Datenquelle geladen"
+        attr(out, "source_label") <- .tr("Keine Datenquelle geladen")
         return(out)
       }
       oncoscopR::onc_read_diagnostics(p, verbose = FALSE)
@@ -488,15 +520,15 @@ server <- function(input, output, session) {
       sort(unique(stats::na.omit(df[[diagnosis_col]])))
     } else character(0)
     shiny::tagList(
-      shiny::selectizeInput("year_filter", "Behandlungsjahr",
+      shiny::selectizeInput("year_filter", .tr("Behandlungsjahr"),
                             choices = year_choices, selected = year_choices,
                             multiple = TRUE),
-      shiny::selectizeInput("diagnosis_filter", "Diagnose/Kodierung",
+      shiny::selectizeInput("diagnosis_filter", .tr("Diagnose/Kodierung"),
                             choices = diag_choices, selected = diag_choices,
                             multiple = TRUE),
-      shiny::checkboxInput("only_primaer", "Nur Primärfälle", FALSE),
-      shiny::checkboxInput("only_patientenfall", "Nur Patientenfälle", FALSE),
-      shiny::checkboxInput("only_inhouse_therapy", "Nur Therapie am Haus", FALSE)
+      shiny::checkboxInput("only_primaer", .tr("Nur Primärfälle"), FALSE),
+      shiny::checkboxInput("only_patientenfall", .tr("Nur Patientenfälle"), FALSE),
+      shiny::checkboxInput("only_inhouse_therapy", .tr("Nur Therapie am Haus"), FALSE)
     )
   })
 
@@ -561,7 +593,7 @@ server <- function(input, output, session) {
     df <- data_filtered()
     diagnosis_col <- find_col(df, c("diagnose", "kodierung"))
     shiny::validate(shiny::need(
-      !is.null(diagnosis_col), "Keine Diagnose-/Kodierungsspalte gefunden."
+      !is.null(diagnosis_col), .tr("Keine Diagnose-/Kodierungsspalte gefunden.")
     ))
     df |>
       dplyr::count(.data[[diagnosis_col]], sort = TRUE) |>
@@ -572,13 +604,13 @@ server <- function(input, output, session) {
       ggplot2::geom_col() +
       ggplot2::coord_flip() +
       ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::labs(x = NULL, y = "Anzahl", title = "Top-Diagnosen/Kodierungen")
+      ggplot2::labs(x = NULL, y = .tr("Anzahl"), title = .tr("Top-Diagnosen/Kodierungen"))
   })
 
   output$plot_year <- shiny::renderPlot({
     df <- data_filtered()
     shiny::validate(shiny::need(
-      "behandlungsjahr" %in% names(df), "Kein Behandlungsjahr ableitbar."
+      "behandlungsjahr" %in% names(df), .tr("Kein Behandlungsjahr ableitbar.")
     ))
     df |>
       dplyr::filter(!is.na(.data$behandlungsjahr)) |>
@@ -587,7 +619,7 @@ server <- function(input, output, session) {
                                    y = .data$n)) +
       ggplot2::geom_col() +
       ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::labs(x = "Jahr", y = "Anzahl", title = "Fallzahlen nach Jahr")
+      ggplot2::labs(x = .tr("Jahr"), y = .tr("Anzahl"), title = .tr("Fallzahlen nach Jahr"))
   })
 
   output$indicator_table <- DT::renderDT({
@@ -618,7 +650,7 @@ server <- function(input, output, session) {
     df <- data_filtered()
     diagnosis_col <- find_col(df, c("diagnose", "kodierung"))
     if (is.null(diagnosis_col)) {
-      return(shiny::helpText("Keine Diagnose-/Kodierungsspalte gefunden."))
+      return(shiny::helpText(.tr("Keine Diagnose-/Kodierungsspalte gefunden.")))
     }
     hl_2025 <- df |>
       dplyr::filter(.data$behandlungsjahr == 2025,
@@ -656,25 +688,25 @@ server <- function(input, output, session) {
     diagnosis_col <- find_col(df, c("diagnose", "kodierung"))
     if (identical(input$simple_question, "diagnose_select")) {
       shiny::validate(shiny::need(!is.null(diagnosis_col),
-                                  "Keine Spalte 'diagnose' oder 'kodierung' gefunden."))
+                                  .tr("Keine Spalte 'diagnose' oder 'kodierung' gefunden.")))
       diag_vals <- sort(unique(stats::na.omit(as.character(df[[diagnosis_col]]))))
       shiny::tagList(
-        shiny::helpText("Hier können gezielt dokumentierte Diagnosen aus der Spalte 'Diagnose' ausgewählt werden. Mehrfachauswahl ist möglich."),
-        shiny::selectizeInput("diagnosis_query_values", "Diagnose(n)",
+        shiny::helpText(.tr("Hier können gezielt dokumentierte Diagnosen aus der Spalte 'Diagnose' ausgewählt werden. Mehrfachauswahl ist möglich.")),
+        shiny::selectizeInput("diagnosis_query_values", .tr("Diagnose(n)"),
                               choices = diag_vals, selected = character(0),
                               multiple = TRUE,
-                              options = list(placeholder = "z.B. Multiples Myelom auswählen")),
+                              options = list(placeholder = .tr("z.B. Multiples Myelom auswählen"))),
         shiny::checkboxInput("diagnosis_query_contains",
-                             "Als Textsuche verwenden statt exakter Auswahl", FALSE)
+                             .tr("Als Textsuche verwenden statt exakter Auswahl"), FALSE)
       )
     } else if (identical(input$simple_question, "custom")) {
       text_cols <- names(df)[vapply(df, function(x) {
         is.character(x) || is.factor(x) || is.logical(x) || is.numeric(x)
       }, logical(1L))]
       shiny::tagList(
-        shiny::selectInput("custom_col", "Spalte", choices = text_cols,
+        shiny::selectInput("custom_col", .tr("Spalte"), choices = text_cols,
                            selected = if ("diagnose" %in% text_cols) "diagnose" else text_cols[1]),
-        shiny::radioButtons("custom_mode", "Abfragemodus", choices = c(
+        shiny::radioButtons("custom_mode", .tr("Abfragemodus"), choices = c(
           "Ja/positiv zählen" = "yesno",
           "Exakter Wert" = "exact",
           "Text enthält" = "contains",
@@ -682,11 +714,11 @@ server <- function(input, output, session) {
         ), selected = "yesno"),
         shiny::conditionalPanel(
           condition = "input.custom_mode == 'exact' || input.custom_mode == 'contains'",
-          shiny::textInput("custom_value", "Suchwert/Text", value = "")
+          shiny::textInput("custom_value", .tr("Suchwert/Text"), value = "")
         )
       )
     } else {
-      shiny::helpText("Die Abfrage wird auf die aktuell global gefilterte Patiententabelle angewendet. Beispiel: Jahr 2025 im linken Filter auswählen, dann hier Multiples Myelom zählen.")
+      shiny::helpText(.tr("Die Abfrage wird auf die aktuell global gefilterte Patiententabelle angewendet. Beispiel: Jahr 2025 im linken Filter auswählen, dann hier Multiples Myelom zählen."))
     }
   })
 
@@ -694,23 +726,23 @@ server <- function(input, output, session) {
     df <- data_filtered()
     diagnosis_col <- find_col(df, c("diagnose", "kodierung"))
     q <- input$simple_question
-    shiny::validate(shiny::need(nrow(df) > 0, "Keine Daten nach globalem Filter."))
+    shiny::validate(shiny::need(nrow(df) > 0, .tr("Keine Daten nach globalem Filter.")))
     result <- df
     label <- ""
     if (q == "psycho") {
-      shiny::validate(shiny::need("psychoonkologie" %in% names(df), "Spalte 'psychoonkologie' nicht gefunden."))
+      shiny::validate(shiny::need("psychoonkologie" %in% names(df), .tr("Spalte 'psychoonkologie' nicht gefunden.")))
       result <- dplyr::filter(df, as_yesno(.data$psychoonkologie) %in% TRUE)
       label <- "Patienten/Fälle mit psychoonkologischem Screening"
     } else if (q == "hivhep") {
       hivhep_cols <- intersect(c("hiv_hepatitis", "hiv", "hep_b", "hep_c", "hepb", "hepc"), names(df))
-      shiny::validate(shiny::need(length(hivhep_cols) > 0, "Keine HIV/Hepatitis-Spalten gefunden."))
+      shiny::validate(shiny::need(length(hivhep_cols) > 0, .tr("Keine HIV/Hepatitis-Spalten gefunden.")))
       result <- dplyr::filter(df, dplyr::if_any(dplyr::all_of(hivhep_cols),
                                                 ~ as_yesno(.x) %in% TRUE))
       label <- "Patienten/Fälle mit dokumentiert positivem HIV/Hepatitis-Screening"
     } else if (q == "diagnose_select") {
-      shiny::validate(shiny::need(!is.null(diagnosis_col), "Keine Diagnose-/Kodierungsspalte gefunden."))
+      shiny::validate(shiny::need(!is.null(diagnosis_col), .tr("Keine Diagnose-/Kodierungsspalte gefunden.")))
       shiny::validate(shiny::need(!is.null(input$diagnosis_query_values) && length(input$diagnosis_query_values) > 0,
-                                  "Bitte mindestens eine Diagnose auswählen."))
+                                  .tr("Bitte mindestens eine Diagnose auswählen.")))
       selected_diag <- input$diagnosis_query_values
       if (isTRUE(input$diagnosis_query_contains)) {
         pattern <- paste(stringr::str_escape(selected_diag), collapse = "|")
@@ -723,46 +755,46 @@ server <- function(input, output, session) {
       }
       label <- paste0("Patienten/Fälle mit Diagnose: ", paste(selected_diag, collapse = ", "))
     } else if (q == "myelom") {
-      shiny::validate(shiny::need(!is.null(diagnosis_col), "Keine Diagnose-/Kodierungsspalte gefunden."))
+      shiny::validate(shiny::need(!is.null(diagnosis_col), .tr("Keine Diagnose-/Kodierungsspalte gefunden.")))
       result <- dplyr::filter(df, stringr::str_detect(
         tolower(as.character(.data[[diagnosis_col]])),
         "myelom|multiple myeloma|multiples myelom|plasma"
       ))
       label <- "Patienten/Fälle mit Multiplem Myelom"
     } else if (q == "hodgkin") {
-      shiny::validate(shiny::need(!is.null(diagnosis_col), "Keine Diagnose-/Kodierungsspalte gefunden."))
+      shiny::validate(shiny::need(!is.null(diagnosis_col), .tr("Keine Diagnose-/Kodierungsspalte gefunden.")))
       result <- dplyr::filter(df, stringr::str_detect(
         tolower(as.character(.data[[diagnosis_col]])), "hodgkin|hl"
       ))
       label <- "Patienten/Fälle mit Hodgkin-Lymphom"
     } else if (q == "tumorkonferenz") {
-      shiny::validate(shiny::need("tumorkonferenz" %in% names(df), "Spalte 'tumorkonferenz' nicht gefunden."))
+      shiny::validate(shiny::need("tumorkonferenz" %in% names(df), .tr("Spalte 'tumorkonferenz' nicht gefunden.")))
       result <- dplyr::filter(df, as_yesno(.data$tumorkonferenz) %in% TRUE)
       label <- "Patienten/Fälle mit Tumorkonferenz"
     } else if (q == "sozialdienst") {
-      shiny::validate(shiny::need("sozialdienst" %in% names(df), "Spalte 'sozialdienst' nicht gefunden."))
+      shiny::validate(shiny::need("sozialdienst" %in% names(df), .tr("Spalte 'sozialdienst' nicht gefunden.")))
       result <- dplyr::filter(df, as_yesno(.data$sozialdienst) %in% TRUE)
       label <- "Patienten/Fälle mit Sozialdienst"
     } else if (q == "primaerfall") {
-      shiny::validate(shiny::need("primaerfall" %in% names(df), "Spalte 'primaerfall' nicht gefunden."))
+      shiny::validate(shiny::need("primaerfall" %in% names(df), .tr("Spalte 'primaerfall' nicht gefunden.")))
       result <- dplyr::filter(df, as_yesno(.data$primaerfall) %in% TRUE)
-      label <- "Primärfälle"
+      label <- .tr("Primärfälle")
     } else if (q == "patientenfall") {
-      shiny::validate(shiny::need("patientenfall" %in% names(df), "Spalte 'patientenfall' nicht gefunden."))
+      shiny::validate(shiny::need("patientenfall" %in% names(df), .tr("Spalte 'patientenfall' nicht gefunden.")))
       result <- dplyr::filter(df, as_yesno(.data$patientenfall) %in% TRUE)
-      label <- "Patientenfälle"
+      label <- .tr("Patientenfälle")
     } else if (q == "custom") {
-      shiny::validate(shiny::need(!is.null(input$custom_col) && input$custom_col %in% names(df), "Bitte eine gültige Spalte auswählen."))
+      shiny::validate(shiny::need(!is.null(input$custom_col) && input$custom_col %in% names(df), .tr("Bitte eine gültige Spalte auswählen.")))
       col <- input$custom_col; mode <- input$custom_mode; value <- input$custom_value
       if (mode == "yesno") {
         result <- dplyr::filter(df, as_yesno(.data[[col]]) %in% TRUE)
         label <- paste0("Eigene Abfrage: ", col, " = Ja/positiv")
       } else if (mode == "exact") {
-        shiny::validate(shiny::need(nzchar(value), "Bitte einen Suchwert eingeben."))
+        shiny::validate(shiny::need(nzchar(value), .tr("Bitte einen Suchwert eingeben.")))
         result <- dplyr::filter(df, tolower(trimws(as.character(.data[[col]]))) == tolower(trimws(value)))
         label <- paste0("Eigene Abfrage: ", col, " = ", value)
       } else if (mode == "contains") {
-        shiny::validate(shiny::need(nzchar(value), "Bitte einen Suchtext eingeben."))
+        shiny::validate(shiny::need(nzchar(value), .tr("Bitte einen Suchtext eingeben.")))
         result <- dplyr::filter(df, stringr::str_detect(
           tolower(as.character(.data[[col]])), stringr::fixed(tolower(value))
         ))
@@ -841,7 +873,7 @@ server <- function(input, output, session) {
     f <- input$tumorboard_file
     if (is.null(f) || !nzchar(f$datapath)) return()
     tumorboard_data(oncoscopR::onc_read_tumorboard(f$datapath))
-    shiny::showNotification(paste0("Tumorboardbeschlüsse geladen: ", f$name),
+    shiny::showNotification(paste0(.tr("Tumorboardbeschlüsse geladen: "), f$name),
                             type = "message")
   })
 
@@ -861,10 +893,10 @@ server <- function(input, output, session) {
     shiny::req(nrow(df) > 0)
     pcol <- tb_patient_col()
     shiny::validate(shiny::need(!is.null(pcol),
-                                "Keine Patientenspalte gefunden. Erwartet z.B. 'Patient', 'Name' oder 'Patient_ID'."))
+                                .tr("Keine Patientenspalte gefunden. Erwartet z.B. 'Patient', 'Name' oder 'Patient_ID'.")))
     choices <- sort(unique(trimws(as.character(df[[pcol]]))))
     choices <- choices[!is.na(choices) & choices != ""]
-    shiny::selectizeInput("tb_patient", "Patient aus Patientenliste",
+    shiny::selectizeInput("tb_patient", .tr("Patient aus Patientenliste"),
                           choices = choices,
                           selected = if (length(choices)) choices[1] else NULL,
                           multiple = FALSE)
@@ -884,10 +916,10 @@ server <- function(input, output, session) {
 
   shiny::observeEvent(input$save_tb, {
     if (is.null(input$tb_patient) || !nzchar(input$tb_patient)) {
-      shiny::showNotification("Bitte zuerst einen Patienten auswählen.", type = "error"); return()
+      shiny::showNotification(.tr("Bitte zuerst einen Patienten auswählen."), type = "error"); return()
     }
     if (is.null(input$tb_decision) || !nzchar(trimws(input$tb_decision))) {
-      shiny::showNotification("Bitte einen Tumorboardbeschluss eintragen.", type = "error"); return()
+      shiny::showNotification(.tr("Bitte einen Tumorboardbeschluss eintragen."), type = "error"); return()
     }
     entry <- data.frame(
       Patient = as.character(input$tb_patient),
@@ -899,7 +931,7 @@ server <- function(input, output, session) {
     )
     tumorboard_data(dplyr::bind_rows(tumorboard_data(), entry))
     shiny::updateTextAreaInput(session, "tb_decision", value = "")
-    shiny::showNotification("Tumorboardbeschluss gespeichert (in-Session).",
+    shiny::showNotification(.tr("Tumorboardbeschluss gespeichert (in-Session)."),
                             type = "message")
   })
 
@@ -951,37 +983,37 @@ server <- function(input, output, session) {
       sort(unique(stats::na.omit(as.character(df$diagnose))))
     } else character(0)
     shiny::tagList(
-      shiny::selectInput("km_endpoint", "Analyse", choices = c(
+      shiny::selectInput("km_endpoint", .tr("Analyse"), choices = c(
         "PFS automatisch: PFS + Rezidiv Event" = "pfs_auto",
         "OS automatisch: OS + Death Event" = "os_auto",
         "Manuell" = "manual"
       ), selected = "pfs_auto"),
-      shiny::selectizeInput("km_diagnosis", "Diagnose/Entität für KM-Kurve",
+      shiny::selectizeInput("km_diagnosis", .tr("Diagnose/Entität für KM-Kurve"),
                             choices = c("Alle Diagnosen" = "__all__", diagnose_choices),
                             selected = "__all__", multiple = FALSE),
-      shiny::selectInput("km_time", "Zeitvariable manuell", choices = num_cols,
+      shiny::selectInput("km_time", .tr("Zeitvariable manuell"), choices = num_cols,
                          selected = if ("pfs" %in% num_cols) "pfs" else num_cols[1]),
-      shiny::selectInput("km_event", "Eventvariable manuell", choices = names(df),
+      shiny::selectInput("km_event", .tr("Eventvariable manuell"), choices = names(df),
                          selected = if ("rezidiv_event" %in% names(df)) "rezidiv_event"
                                     else if ("rezidiv" %in% names(df)) "rezidiv"
                                     else if ("death_event" %in% names(df)) "death_event"
                                     else names(df)[1]),
-      shiny::selectInput("km_group", "Gruppe/Stratum optional",
-                         choices = c("— keine —", cat_cols), selected = "— keine —"),
-      shiny::checkboxInput("km_confint", "Konfidenzintervall", TRUE),
-      shiny::checkboxInput("km_risktable", "Risk Table", TRUE),
+      shiny::selectInput("km_group", .tr("Gruppe/Stratum optional"),
+                         choices = c(.tr("— keine —"), cat_cols), selected = .tr("— keine —")),
+      shiny::checkboxInput("km_confint", .tr("Konfidenzintervall"), TRUE),
+      shiny::checkboxInput("km_risktable", .tr("Risk Table"), TRUE),
       shiny::numericInput("km_time_div",
-                          "Zeit-Skalierung: 1 = Monate, 12 = Jahre",
+                          .tr("Zeit-Skalierung: 1 = Monate, 12 = Jahre"),
                           value = 1, min = 0.0001),
-      shiny::textInput("km_title", "Titel", value = "Kaplan–Meier-Kurve"),
-      shiny::textInput("km_xlab", "X-Achse", value = "Monate"),
-      shiny::textInput("km_ylab", "Y-Achse", value = "Wahrscheinlichkeit")
+      shiny::textInput("km_title", .tr("Titel"), value = .tr("Kaplan–Meier-Kurve")),
+      shiny::textInput("km_xlab", .tr("X-Achse"), value = .tr("Monate")),
+      shiny::textInput("km_ylab", .tr("Y-Achse"), value = .tr("Wahrscheinlichkeit"))
     )
   })
 
   km_plot_obj <- shiny::eventReactive(input$run_km, {
     df <- data_filtered()
-    shiny::validate(shiny::need(nrow(df) > 1, "Zu wenige Daten nach Filter."))
+    shiny::validate(shiny::need(nrow(df) > 1, .tr("Zu wenige Daten nach Filter.")))
     if (!is.null(input$km_diagnosis) && input$km_diagnosis != "__all__" &&
         "diagnose" %in% names(df)) {
       df <- dplyr::filter(df, as.character(.data$diagnose) == input$km_diagnosis)
@@ -1002,8 +1034,8 @@ server <- function(input, output, session) {
       default_title <- input$km_title
     }
     shiny::validate(
-      shiny::need(time_col %in% names(df), paste0("Zeitspalte '", time_col, "' nicht gefunden.")),
-      shiny::need(event_col %in% names(df), paste0("Eventspalte '", event_col, "' nicht gefunden."))
+      shiny::need(time_col %in% names(df), paste0(.tr("Zeitspalte '"), time_col, .tr("' nicht gefunden."))),
+      shiny::need(event_col %in% names(df), paste0(.tr("Eventspalte '"), event_col, .tr("' nicht gefunden.")))
     )
     time <- suppressWarnings(as.numeric(df[[time_col]])) / input$km_time_div
     event <- as_event01(df[[event_col]], mode = event_mode)
@@ -1017,7 +1049,7 @@ server <- function(input, output, session) {
                   "Keine Ereignisse in der Auswahl.")
     )
     km_df <- data.frame(time = time[keep], event = as.integer(event[keep]))
-    if (input$km_group != "— keine —") {
+    if (input$km_group != .tr("— keine —")) {
       km_df$grp <- as.factor(df[[input$km_group]][keep])
       km_df <- km_df[!is.na(km_df$grp), , drop = FALSE]
       fit <- survival::survfit(survival::Surv(time, event) ~ grp, data = km_df)
@@ -1025,7 +1057,7 @@ server <- function(input, output, session) {
       fit <- survival::survfit(survival::Surv(time, event) ~ 1, data = km_df)
     }
     title_to_use <- if (!is.null(input$km_title) && nzchar(input$km_title) &&
-                        input$km_title != "Kaplan–Meier-Kurve") {
+                        input$km_title != .tr("Kaplan–Meier-Kurve")) {
       input$km_title
     } else default_title
 
@@ -1075,21 +1107,21 @@ server <- function(input, output, session) {
   output$therapy_filters <- shiny::renderUI({
     blocks <- therapy_block_data()
     if (nrow(blocks) == 0) {
-      return(shiny::helpText("Keine Therapieblock-Tabelle gefunden. Bitte die OPS-8-544-Tabelle als Blatt 'Komplexe Chemotherapie' (oder 'Therapie_OPS8544') in die Excel-Datei einfügen."))
+      return(shiny::helpText(.tr("Keine Therapieblock-Tabelle gefunden. Bitte die OPS-8-544-Tabelle als Blatt 'Komplexe Chemotherapie' (oder 'Therapie_OPS8544') in die Excel-Datei einfügen.")))
     }
     shiny::tagList(
-      shiny::selectizeInput("therapy_year_filter", "Jahr",
+      shiny::selectizeInput("therapy_year_filter", .tr("Jahr"),
                             choices = sort(unique(stats::na.omit(blocks$jahr))),
                             selected = sort(unique(stats::na.omit(blocks$jahr))),
                             multiple = TRUE),
-      shiny::selectizeInput("therapy_protocol_filter", "Therapieprotokoll",
+      shiny::selectizeInput("therapy_protocol_filter", .tr("Therapieprotokoll"),
                             choices = sort(unique(stats::na.omit(blocks$therapieprotokoll))),
                             selected = NULL, multiple = TRUE),
-      shiny::selectizeInput("therapy_diagnosis_filter", "Diagnose",
+      shiny::selectizeInput("therapy_diagnosis_filter", .tr("Diagnose"),
                             choices = sort(unique(stats::na.omit(blocks$diagnose))),
                             selected = NULL, multiple = TRUE),
       shiny::textInput("therapy_search",
-                       "Freitextsuche Patient/Therapie/Diagnose", value = "")
+                       .tr("Freitextsuche Patient/Therapie/Diagnose"), value = "")
     )
   })
 
@@ -1128,7 +1160,7 @@ server <- function(input, output, session) {
 
   output$therapy_protocol_table <- DT::renderDT({
     blocks <- therapy_filtered()
-    shiny::validate(shiny::need(nrow(blocks) > 0, "Keine Therapieblöcke im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(blocks) > 0, .tr("Keine Therapieblöcke im aktuellen Filter.")))
     tab <- blocks |>
       dplyr::group_by(.data$therapieprotokoll) |>
       dplyr::summarise(OPS_8_544_Bloecke = dplyr::n(),
@@ -1141,7 +1173,7 @@ server <- function(input, output, session) {
 
   output$therapy_diagnosis_table <- DT::renderDT({
     blocks <- therapy_filtered()
-    shiny::validate(shiny::need(nrow(blocks) > 0, "Keine Therapieblöcke im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(blocks) > 0, .tr("Keine Therapieblöcke im aktuellen Filter.")))
     tab <- blocks |>
       dplyr::group_by(.data$diagnose) |>
       dplyr::summarise(OPS_8_544_Bloecke = dplyr::n(),
@@ -1154,25 +1186,25 @@ server <- function(input, output, session) {
 
   output$therapy_protocol_plot <- shiny::renderPlot({
     blocks <- therapy_filtered()
-    shiny::validate(shiny::need(nrow(blocks) > 0, "Keine Therapieblöcke im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(blocks) > 0, .tr("Keine Therapieblöcke im aktuellen Filter.")))
     tab <- blocks |> dplyr::count(.data$therapieprotokoll, sort = TRUE) |> dplyr::slice_head(n = 20)
     ggplot2::ggplot(tab, ggplot2::aes(x = stats::reorder(.data$therapieprotokoll, .data$n),
                                       y = .data$n)) +
       ggplot2::geom_col() + ggplot2::coord_flip() +
       ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::labs(x = NULL, y = "OPS-8-544-Blöcke", title = "Blöcke nach Therapieprotokoll")
+      ggplot2::labs(x = NULL, y = .tr("OPS-8-544-Blöcke"), title = .tr("Blöcke nach Therapieprotokoll"))
   })
 
   output$therapy_month_plot <- shiny::renderPlot({
     blocks <- therapy_filtered()
-    shiny::validate(shiny::need(nrow(blocks) > 0, "Keine Therapieblöcke im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(blocks) > 0, .tr("Keine Therapieblöcke im aktuellen Filter.")))
     tab <- blocks |> dplyr::filter(!is.na(.data$monat_sort)) |> dplyr::count(.data$monat_sort)
-    shiny::validate(shiny::need(nrow(tab) > 0, "Keine verwertbaren Datums-/Monatsangaben."))
+    shiny::validate(shiny::need(nrow(tab) > 0, .tr("Keine verwertbaren Datums-/Monatsangaben.")))
     ggplot2::ggplot(tab, ggplot2::aes(x = .data$monat_sort, y = .data$n, group = 1)) +
       ggplot2::geom_line() + ggplot2::geom_point() +
       ggplot2::theme_minimal(base_size = 13) +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
-      ggplot2::labs(x = "Monat", y = "OPS-8-544-Blöcke", title = "Monatliche OPS-8-544-Blöcke")
+      ggplot2::labs(x = .tr("Monat"), y = .tr("OPS-8-544-Blöcke"), title = .tr("Monatliche OPS-8-544-Blöcke"))
   })
 
   output$therapy_block_details <- DT::renderDT({
@@ -1208,20 +1240,20 @@ server <- function(input, output, session) {
   output$diagnostic_filters <- shiny::renderUI({
     blocks <- diagnostic_block_data()
     if (nrow(blocks) == 0) {
-      return(shiny::helpText("Keine OPS-1-941-/Komplexe-Diagnostik-Tabelle gefunden. Bitte die Tabelle als Blatt 'Komplexe Diagnostik' in die Excel-Datei einfügen."))
+      return(shiny::helpText(.tr("Keine OPS-1-941-/Komplexe-Diagnostik-Tabelle gefunden. Bitte die Tabelle als Blatt 'Komplexe Diagnostik' in die Excel-Datei einfügen.")))
     }
     shiny::tagList(
-      shiny::selectizeInput("diagnostic_year_filter", "Jahr",
+      shiny::selectizeInput("diagnostic_year_filter", .tr("Jahr"),
                             choices = sort(unique(stats::na.omit(blocks$jahr))),
                             selected = sort(unique(stats::na.omit(blocks$jahr))),
                             multiple = TRUE),
-      shiny::selectizeInput("diagnostic_diagnosis_filter", "Diagnose",
+      shiny::selectizeInput("diagnostic_diagnosis_filter", .tr("Diagnose"),
                             choices = sort(unique(stats::na.omit(blocks$diagnose))),
                             selected = NULL, multiple = TRUE),
-      shiny::selectizeInput("diagnostic_component_filter", "Diagnostikbereich",
+      shiny::selectizeInput("diagnostic_component_filter", .tr("Diagnostikbereich"),
                             choices = sort(unique(oncoscopR:::.diagnostic_components_long(blocks)$diagnostik_bereich)),
                             selected = NULL, multiple = TRUE),
-      shiny::textInput("diagnostic_search", "Freitextsuche Patient/Diagnose", value = "")
+      shiny::textInput("diagnostic_search", .tr("Freitextsuche Patient/Diagnose"), value = "")
     )
   })
 
@@ -1270,7 +1302,7 @@ server <- function(input, output, session) {
 
   output$diagnostic_component_table <- DT::renderDT({
     long <- diagnostic_components_filtered()
-    shiny::validate(shiny::need(nrow(long) > 0, "Keine komplexen Diagnostik-Komponenten im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(long) > 0, .tr("Keine komplexen Diagnostik-Komponenten im aktuellen Filter.")))
     tab <- long |>
       dplyr::group_by(.data$diagnostik_bereich) |>
       dplyr::summarise(Anzahl = dplyr::n(),
@@ -1283,7 +1315,7 @@ server <- function(input, output, session) {
 
   output$diagnostic_diagnosis_table <- DT::renderDT({
     blocks <- diagnostic_filtered()
-    shiny::validate(shiny::need(nrow(blocks) > 0, "Keine komplexen Diagnostiken im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(blocks) > 0, .tr("Keine komplexen Diagnostiken im aktuellen Filter.")))
     tab <- blocks |>
       dplyr::group_by(.data$diagnose) |>
       dplyr::summarise(OPS_1_941_Faelle = dplyr::n(),
@@ -1296,25 +1328,25 @@ server <- function(input, output, session) {
 
   output$diagnostic_component_plot <- shiny::renderPlot({
     long <- diagnostic_components_filtered()
-    shiny::validate(shiny::need(nrow(long) > 0, "Keine komplexen Diagnostik-Komponenten im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(long) > 0, .tr("Keine komplexen Diagnostik-Komponenten im aktuellen Filter.")))
     tab <- long |> dplyr::count(.data$diagnostik_bereich, sort = TRUE)
     ggplot2::ggplot(tab, ggplot2::aes(x = stats::reorder(.data$diagnostik_bereich, .data$n),
                                       y = .data$n)) +
       ggplot2::geom_col() + ggplot2::coord_flip() +
       ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::labs(x = NULL, y = "Anzahl", title = "OPS-1-941-Komponenten")
+      ggplot2::labs(x = NULL, y = .tr("Anzahl"), title = .tr("OPS-1-941-Komponenten"))
   })
 
   output$diagnostic_month_plot <- shiny::renderPlot({
     blocks <- diagnostic_filtered()
-    shiny::validate(shiny::need(nrow(blocks) > 0, "Keine komplexen Diagnostiken im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(blocks) > 0, .tr("Keine komplexen Diagnostiken im aktuellen Filter.")))
     tab <- blocks |> dplyr::filter(!is.na(.data$monat_sort)) |> dplyr::count(.data$monat_sort)
-    shiny::validate(shiny::need(nrow(tab) > 0, "Keine verwertbaren Datums-/Monatsangaben."))
+    shiny::validate(shiny::need(nrow(tab) > 0, .tr("Keine verwertbaren Datums-/Monatsangaben.")))
     ggplot2::ggplot(tab, ggplot2::aes(x = .data$monat_sort, y = .data$n, group = 1)) +
       ggplot2::geom_line() + ggplot2::geom_point() +
       ggplot2::theme_minimal(base_size = 13) +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
-      ggplot2::labs(x = "Monat", y = "OPS-1-941-Fälle", title = "Monatliche komplexe Diagnostiken")
+      ggplot2::labs(x = .tr("Monat"), y = .tr("OPS-1-941-Fälle"), title = .tr("Monatliche komplexe Diagnostiken"))
   })
 
   output$diagnostic_block_details <- DT::renderDT({
@@ -1347,22 +1379,22 @@ server <- function(input, output, session) {
       error = function(e) NULL
     )
     shiny::validate(shiny::need(!is.null(onco_all) && nrow(onco_all) > 0,
-                                "Keine verwertbaren Einträge in 'Krankheitsspezifische hematol Resultate'."))
+                                .tr("Keine verwertbaren Einträge in 'Krankheitsspezifische hematol Resultate'.")))
     ent_choices <- sort(unique(stats::na.omit(onco_all$diagnose_label)))
     alt_choices <- onco_all |>
       dplyr::filter(.data$oncoprint_mutation) |>
       dplyr::count(.data$alteration, sort = TRUE) |>
       dplyr::pull(.data$alteration)
     shiny::tagList(
-      shiny::selectizeInput("onco_entity_filter", "Entität/Diagnose",
+      shiny::selectizeInput("onco_entity_filter", .tr("Entität/Diagnose"),
                             choices = ent_choices, selected = ent_choices, multiple = TRUE),
-      shiny::numericInput("onco_top_n", "Top-Alterationen anzeigen",
+      shiny::numericInput("onco_top_n", .tr("Top-Alterationen anzeigen"),
                           value = 25, min = 5, max = 100, step = 5),
-      shiny::checkboxInput("onco_remove_negative", "Negative/NA-Befunde ausblenden", TRUE),
-      shiny::selectizeInput("onco_alt_filter", "Optional: bestimmte Mutationen",
+      shiny::checkboxInput("onco_remove_negative", .tr("Negative/NA-Befunde ausblenden"), TRUE),
+      shiny::selectizeInput("onco_alt_filter", .tr("Optional: bestimmte Mutationen"),
                             choices = alt_choices, selected = NULL, multiple = TRUE,
-                            options = list(placeholder = "leer = automatisch Top-Alterationen")),
-      shiny::checkboxInput("onco_show_patient_names", "Patientennamen in X-Achse anzeigen", FALSE)
+                            options = list(placeholder = .tr("leer = automatisch Top-Alterationen"))),
+      shiny::checkboxInput("onco_show_patient_names", .tr("Patientennamen in X-Achse anzeigen"), FALSE)
     )
   })
 
@@ -1405,7 +1437,7 @@ server <- function(input, output, session) {
 
   oncoprint_plot_obj <- shiny::eventReactive(input$run_oncoprint, {
     onco <- oncoprint_long()
-    shiny::validate(shiny::need(nrow(onco) > 0, "Keine echten Mutationen/Varianten im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(onco) > 0, .tr("Keine echten Mutationen/Varianten im aktuellen Filter.")))
     patient_order <- onco |>
       dplyr::distinct(.data$patient_label, .data$diagnose_label) |>
       dplyr::arrange(.data$diagnose_label, .data$patient_label) |>
@@ -1435,9 +1467,9 @@ server <- function(input, output, session) {
         legend.position = "bottom"
       ) +
       ggplot2::labs(
-        title = "Oncoprint: echte Mutationen/Varianten",
-        subtitle = "NA, negative Befunde und strukturelle/zytogenetische Alterationen sind aus dem Plot ausgeschlossen",
-        x = "Patient/Fall", y = "Mutation/Variante", fill = "Typ"
+        title = .tr("Oncoprint: echte Mutationen/Varianten"),
+        subtitle = .tr("NA, negative Befunde und strukturelle/zytogenetische Alterationen sind aus dem Plot ausgeschlossen"),
+        x = .tr("Patient/Fall"), y = .tr("Mutation/Variante"), fill = .tr("Typ")
       )
   }, ignoreNULL = FALSE)
 
@@ -1445,7 +1477,7 @@ server <- function(input, output, session) {
 
   output$oncoprint_summary_table <- DT::renderDT({
     onco <- oncoprint_long()
-    shiny::validate(shiny::need(nrow(onco) > 0, "Keine echten Mutationen/Varianten im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(onco) > 0, .tr("Keine echten Mutationen/Varianten im aktuellen Filter.")))
     tab <- onco |>
       dplyr::group_by(.data$diagnose_label, .data$alteration) |>
       dplyr::summarise(
@@ -1469,7 +1501,7 @@ server <- function(input, output, session) {
 
   output$oncoprint_structural_table <- DT::renderDT({
     structural <- oncoprint_structural()
-    shiny::validate(shiny::need(nrow(structural) > 0, "Keine strukturellen/zytogenetischen Befunde im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(structural) > 0, .tr("Keine strukturellen/zytogenetischen Befunde im aktuellen Filter.")))
     tab <- structural |>
       dplyr::group_by(.data$diagnose_label, .data$alteration_class, .data$alteration) |>
       dplyr::summarise(
@@ -1514,21 +1546,21 @@ server <- function(input, output, session) {
       error = function(e) NULL
     )
     shiny::validate(shiny::need(!is.null(cyto_all) && nrow(cyto_all) > 0,
-                                "Keine verwertbaren Einträge in 'Zytogenetik'."))
+                                .tr("Keine verwertbaren Einträge in 'Zytogenetik'.")))
     ent_choices <- sort(unique(stats::na.omit(cyto_all$diagnose_label)))
     cyto_choices <- cyto_all |>
       dplyr::filter(!.data$alteration_class %in% c("negativ/kein Nachweis", "Nicht verwertbar/NA")) |>
       dplyr::count(.data$alteration, sort = TRUE) |>
       dplyr::pull(.data$alteration)
     shiny::tagList(
-      shiny::selectizeInput("cyto_entity_filter", "Entität/Diagnose",
+      shiny::selectizeInput("cyto_entity_filter", .tr("Entität/Diagnose"),
                             choices = ent_choices, selected = ent_choices, multiple = TRUE),
-      shiny::numericInput("cyto_top_n", "Top-Befunde anzeigen",
+      shiny::numericInput("cyto_top_n", .tr("Top-Befunde anzeigen"),
                           value = 25, min = 5, max = 100, step = 5),
-      shiny::checkboxInput("cyto_remove_negative", "Negative/NA-Befunde ausblenden", TRUE),
-      shiny::selectizeInput("cyto_alt_filter", "Optional: bestimmte Zytogenetik-Befunde",
+      shiny::checkboxInput("cyto_remove_negative", .tr("Negative/NA-Befunde ausblenden"), TRUE),
+      shiny::selectizeInput("cyto_alt_filter", .tr("Optional: bestimmte Zytogenetik-Befunde"),
                             choices = cyto_choices, selected = NULL, multiple = TRUE,
-                            options = list(placeholder = "leer = automatisch Top-Befunde"))
+                            options = list(placeholder = .tr("leer = automatisch Top-Befunde")))
     )
   })
 
@@ -1561,7 +1593,7 @@ server <- function(input, output, session) {
 
   cyto_plot_obj <- shiny::eventReactive(input$run_cyto, {
     cyto <- cyto_all_filtered()
-    shiny::validate(shiny::need(nrow(cyto) > 0, "Keine Zytogenetik-Befunde im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(cyto) > 0, .tr("Keine Zytogenetik-Befunde im aktuellen Filter.")))
     tab <- cyto |>
       dplyr::count(.data$alteration, sort = TRUE) |>
       dplyr::arrange(.data$n) |>
@@ -1570,9 +1602,9 @@ server <- function(input, output, session) {
       ggplot2::geom_col() + ggplot2::coord_flip() +
       ggplot2::theme_minimal(base_size = 13) +
       ggplot2::labs(
-        title = "Top-Zytogenetik-Befunde",
-        subtitle = "Quelle: separate Spalte 'Zytogenetik'",
-        x = "Zytogenetik-Befund", y = "Anzahl Fälle/Patienten"
+        title = .tr("Top-Zytogenetik-Befunde"),
+        subtitle = .tr("Quelle: separate Spalte 'Zytogenetik'"),
+        x = .tr("Zytogenetik-Befund"), y = .tr("Anzahl Fälle/Patienten")
       )
   }, ignoreNULL = FALSE)
 
@@ -1580,7 +1612,7 @@ server <- function(input, output, session) {
 
   output$cyto_summary_table <- DT::renderDT({
     cyto <- cyto_all_filtered()
-    shiny::validate(shiny::need(nrow(cyto) > 0, "Keine Zytogenetik-Befunde im aktuellen Filter."))
+    shiny::validate(shiny::need(nrow(cyto) > 0, .tr("Keine Zytogenetik-Befunde im aktuellen Filter.")))
     tab <- cyto |>
       dplyr::group_by(.data$diagnose_label, .data$alteration_class, .data$alteration) |>
       dplyr::summarise(
@@ -1619,25 +1651,25 @@ server <- function(input, output, session) {
     num_cols <- names(df)[vapply(df, is.numeric, logical(1L))]
     grp_cols <- names(df)[vapply(df, function(x) is.character(x) || is.factor(x), logical(1L))]
     shiny::tagList(
-      shiny::selectInput("box_y", "Numerische Variable Y", choices = num_cols,
+      shiny::selectInput("box_y", .tr("Numerische Variable Y"), choices = num_cols,
                          selected = if ("pfs" %in% num_cols) "pfs" else num_cols[1]),
-      shiny::selectInput("box_x", "Gruppe X", choices = grp_cols,
+      shiny::selectInput("box_x", .tr("Gruppe X"), choices = grp_cols,
                          selected = if ("kodierung" %in% grp_cols) "kodierung" else grp_cols[1]),
-      shiny::checkboxInput("box_jitter", "Jitter-Punkte anzeigen", TRUE),
-      shiny::checkboxInput("box_log", "Y-Achse log10", FALSE),
-      shiny::textInput("box_title", "Titel", value = "Boxplot")
+      shiny::checkboxInput("box_jitter", .tr("Jitter-Punkte anzeigen"), TRUE),
+      shiny::checkboxInput("box_log", .tr("Y-Achse log10"), FALSE),
+      shiny::textInput("box_title", .tr("Titel"), value = .tr("Boxplot"))
     )
   })
 
   box_plot_obj <- shiny::eventReactive(input$run_box, {
     df <- data_filtered()
     shiny::req(input$box_y, input$box_x)
-    shiny::validate(shiny::need(nrow(df) > 1, "Zu wenige Daten nach Filter."))
+    shiny::validate(shiny::need(nrow(df) > 1, .tr("Zu wenige Daten nach Filter.")))
     plot_df <- data.frame(
       x = as.factor(df[[input$box_x]]),
       y = suppressWarnings(as.numeric(df[[input$box_y]]))
     ) |> dplyr::filter(!is.na(.data$x), !is.na(.data$y))
-    shiny::validate(shiny::need(nrow(plot_df) > 1, "Keine verwertbaren Daten für Boxplot."))
+    shiny::validate(shiny::need(nrow(plot_df) > 1, .tr("Keine verwertbaren Daten für Boxplot.")))
     p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data$x, y = .data$y)) +
       ggplot2::geom_boxplot(outlier.shape = NA) +
       ggplot2::theme_minimal(base_size = 13) +
@@ -1657,6 +1689,314 @@ server <- function(input, output, session) {
       ggplot2::ggsave(file, p, width = 10, height = 7, dpi = 150)
     }
   )
+
+  # ------------------------------------------------------------------
+  # Methods documentation tab
+  # ------------------------------------------------------------------
+  output$methods_doc <- shiny::renderUI({
+    is_en <- isTRUE(input$lang == "en")
+    .h <- function(de, en) if (is_en) en else de
+    shiny::tagList(
+      shiny::h3(.h(
+        "Methoden: Pakete, Berechnungen und statistische Tests",
+        "Methods: packages, calculations and statistical tests"
+      )),
+      shiny::p(.h(
+        paste0(
+          "Diese App ist Teil des R-Pakets ", shiny::tags$code("oncoscopR"),
+          " (CTTIR-Suite). Alle Berechnungen sind reproduzierbar und ",
+          "vollständig im Quellcode auf GitHub einsehbar."
+        ),
+        paste0(
+          "This app is part of the R package ", shiny::tags$code("oncoscopR"),
+          " (CTTIR suite). All calculations are reproducible and fully ",
+          "auditable in the source on GitHub."
+        )
+      )),
+
+      shiny::h4(.h("Verwendete R-Pakete", "R packages used")),
+      shiny::tags$table(
+        class = "table table-sm",
+        shiny::tags$thead(shiny::tags$tr(
+          shiny::tags$th(.h("Paket", "Package")),
+          shiny::tags$th(.h("Funktion in der App", "Role in the app"))
+        )),
+        shiny::tags$tbody(
+          shiny::tags$tr(shiny::tags$td("shiny"), shiny::tags$td(.h(
+            "Reaktives Framework, UI- und Server-Logik.",
+            "Reactive framework, UI and server logic."
+          ))),
+          shiny::tags$tr(shiny::tags$td("bslib + bsicons"), shiny::tags$td(.h(
+            "Bootstrap-5-Theme (Hugo-Coder-Palette), Karten, Value-Boxes.",
+            "Bootstrap 5 theme (Hugo Coder palette), cards, value boxes."
+          ))),
+          shiny::tags$tr(shiny::tags$td("thematic + sass"), shiny::tags$td(.h(
+            "Automatische ggplot-Themen, SCSS-Kompilierung.",
+            "Automatic ggplot theming, SCSS compilation."
+          ))),
+          shiny::tags$tr(shiny::tags$td("shiny.i18n"), shiny::tags$td(.h(
+            "DE/EN-Sprachumschaltung ohne Re-Render.",
+            "DE/EN language toggle without re-rendering the UI."
+          ))),
+          shiny::tags$tr(shiny::tags$td("readxl"), shiny::tags$td(.h(
+            "Einlesen der Tumor-Dokumentations-xlsx (drei kanonische Blätter).",
+            "Reads the tumour-documentation .xlsx (three canonical sheets)."
+          ))),
+          shiny::tags$tr(shiny::tags$td("janitor"), shiny::tags$td(.h(
+            "clean_names() vereinheitlicht Spaltennamen; Duplikate werden erkannt.",
+            "clean_names() normalises column names; duplicates are detected."
+          ))),
+          shiny::tags$tr(shiny::tags$td("dplyr + tidyr"), shiny::tags$td(.h(
+            "Filter, Gruppierung, Aggregation, Pivot.",
+            "Filtering, grouping, aggregation, pivoting."
+          ))),
+          shiny::tags$tr(shiny::tags$td("stringr"), shiny::tags$td(.h(
+            "Klassifikations-Regex für Alteration / Zytogenetik.",
+            "Classification regex for alteration / cytogenetics."
+          ))),
+          shiny::tags$tr(shiny::tags$td("lubridate"), shiny::tags$td(.h(
+            "Datums-Parsing, Jahres- und Monatsableitung.",
+            "Date parsing, year and month derivation."
+          ))),
+          shiny::tags$tr(shiny::tags$td("survival"), shiny::tags$td(.h(
+            "Surv() und survfit() für Kaplan-Meier-Schätzungen.",
+            "Surv() and survfit() for Kaplan-Meier estimates."
+          ))),
+          shiny::tags$tr(shiny::tags$td("survminer (Suggests)"), shiny::tags$td(.h(
+            "ggsurvplot() für KM-Visualisierung; bei Abwesenheit base-ggplot-Fallback.",
+            "ggsurvplot() for KM visualisation; falls back to base-ggplot."
+          ))),
+          shiny::tags$tr(shiny::tags$td("ggplot2"), shiny::tags$td(.h(
+            "Alle Plots (Balken, Linien, Oncoprint-Kacheln, Boxplots).",
+            "All plots (bars, lines, oncoprint tiles, box plots)."
+          ))),
+          shiny::tags$tr(shiny::tags$td("scales"), shiny::tags$td(.h(
+            "Prozent- und Tausenderformatierung.",
+            "Percent and thousand-separator formatting."
+          ))),
+          shiny::tags$tr(shiny::tags$td("DT"), shiny::tags$td(.h(
+            "Interaktive Tabellen mit Suche, Sortierung, Pagination.",
+            "Interactive tables with search, sort, pagination."
+          ))),
+          shiny::tags$tr(shiny::tags$td("cli + rlang"), shiny::tags$td(.h(
+            "Strukturierte Fehler- und Hinweismeldungen mit Call-Tracing.",
+            "Structured errors and informational messages with call tracing."
+          )))
+        )
+      ),
+
+      shiny::h4(.h("Deskriptive Berechnungen", "Descriptive calculations")),
+      shiny::tags$ul(
+        shiny::tags$li(.h(
+          paste0(shiny::tags$b("Anzahl Patienten"), ": ",
+                 shiny::tags$code("nrow(data_filtered())"),
+                 " nach globalem Filter."),
+          paste0(shiny::tags$b("Patients total"), ": ",
+                 shiny::tags$code("nrow(data_filtered())"),
+                 " after the global filter.")
+        )),
+        shiny::tags$li(.h(
+          "Indikator-Anteile: 'Positiv' / 'Gesamt' (oder Dokumentiert), mit scales::percent(0.1) gerundet auf 0.1 %.",
+          "Indicator shares: 'positive' / 'total' (or documented), rounded to 0.1 % via scales::percent()."
+        )),
+        shiny::tags$li(.h(
+          paste0(shiny::tags$b("Ja/Nein-Kodierung"), ": ",
+                 shiny::tags$code(".as_yesno()"),
+                 " erkennt explizite Tokens (ja/nein/1/0/true/false/wahr/falsch/x) und mappt unklare Werte auf NA."),
+          paste0(shiny::tags$b("Yes/No coding"), ": ",
+                 shiny::tags$code(".as_yesno()"),
+                 " maps explicit tokens (ja/nein/1/0/true/false/wahr/falsch/x); ambiguous values become NA.")
+        )),
+        shiny::tags$li(.h(
+          paste0(shiny::tags$b("Distinct-Patienten"), ": ",
+                 shiny::tags$code(".n_distinct_nonempty()"),
+                 " (NA und leere Strings werden vorher entfernt)."),
+          paste0(shiny::tags$b("Distinct patients"), ": ",
+                 shiny::tags$code(".n_distinct_nonempty()"),
+                 " (NA and empty strings are dropped first).")
+        ))
+      ),
+
+      shiny::h4(.h("OPS-8-544 Therapieblock-Zählung",
+                   "OPS-8-544 therapy-block counting")),
+      shiny::p(.h(
+        paste0(
+          "Numerische OPS-8-544-Werte > 0 werden als positive Blöcke ",
+          "gewertet (Blocknummern 1, 2, 3 ... = jeweils ein Block). ",
+          "Liegen keine numerischen Werte vor, wird ",
+          shiny::tags$code(".as_event01()"),
+          " auf Tokens angewendet. Wenn keine OPS-Spalte existiert, ",
+          "zählt jede eindeutige Kombination aus ",
+          "Patient/Datum/Zyklus/Protokoll als Block ",
+          "(",
+          shiny::tags$code("dplyr::distinct()"), ")."
+        ),
+        paste0(
+          "Numeric OPS-8-544 values > 0 are counted as positive blocks ",
+          "(numbers 1, 2, 3 ... each = one block). Without numeric values, ",
+          shiny::tags$code(".as_event01()"),
+          " falls back to token matching. With no OPS column at all, ",
+          "every distinct Patient/Date/Cycle/Protocol combination is ",
+          "treated as one block (",
+          shiny::tags$code("dplyr::distinct()"), ")."
+        )
+      )),
+
+      shiny::h4(.h("OPS-1-941 Komplexe Diagnostik",
+                   "OPS-1-941 complex diagnostics")),
+      shiny::p(.h(
+        paste0(
+          "Analoge Zähl-Logik wie OPS 8-544. Komponenten ",
+          "(Morphologie, Immunphänotypisierung, Zytogenetik, ",
+          "Molekulargenetik) werden anhand der Spaltennamen erkannt ",
+          "(", shiny::tags$code("grepl"), "-Regex). Long-Format über ",
+          shiny::tags$code("tidyr::pivot_longer()"), "."
+        ),
+        paste0(
+          "Same counting logic as OPS 8-544. Components ",
+          "(Morphology, Immunophenotyping, Cytogenetics, Molecular ",
+          "genetics) are detected via column-name regex (",
+          shiny::tags$code("grepl"), "). Long form via ",
+          shiny::tags$code("tidyr::pivot_longer()"), "."
+        )
+      )),
+
+      shiny::h4(.h("Kaplan-Meier-Schätzung", "Kaplan-Meier estimation")),
+      shiny::p(.h(
+        paste0(
+          shiny::tags$b("Modell"),
+          ": Nicht-parametrische Überlebenswahrscheinlichkeit ",
+          "via ", shiny::tags$code("survival::survfit(Surv(time, event) ~ 1)"),
+          " (oder ~ grp für Stratifizierung). Punktweise ",
+          "Konfidenzintervalle nach Greenwood-Methode (Default). ",
+          "Visualisierung mit ", shiny::tags$code("survminer::ggsurvplot()"),
+          " inkl. Risk-Table; ohne survminer wird ein base-ggplot-Fallback ",
+          "verwendet (geom_step + geom_ribbon)."
+        ),
+        paste0(
+          shiny::tags$b("Model"),
+          ": non-parametric survival via ",
+          shiny::tags$code("survival::survfit(Surv(time, event) ~ 1)"),
+          " (or ~ grp for stratification). Point-wise confidence intervals ",
+          "via Greenwood's formula (default). Visualised with ",
+          shiny::tags$code("survminer::ggsurvplot()"),
+          " incl. risk table; falls back to base-ggplot (geom_step + ",
+          "geom_ribbon) when survminer is unavailable."
+        )
+      )),
+      shiny::p(.h(
+        paste0(
+          shiny::tags$b("Event-Kodierung"), " (",
+          shiny::tags$code(".as_event01()"), "): ",
+          "1 = Ereignis, 0 = zensiert, NA verworfen. Date-/POSIXct-Werte: ",
+          "vorhanden = 1, fehlend = 0. Strings werden auf einer expliziten ",
+          "Tokenliste verglichen (ja, j, yes, y, 1, x, true, wahr, tod, ",
+          "verstorben → 1; nein, n, no, 0, false, falsch, lebt, alive ",
+          "→ 0; alles andere → NA). Ein bewusst restriktiver Regex ",
+          "ohne Präfix-Match: „10 Monate“ wird NICHT als Event ",
+          "klassifiziert (Bugfix gegenüber Legacy-v5)."
+        ),
+        paste0(
+          shiny::tags$b("Event coding"), " (",
+          shiny::tags$code(".as_event01()"), "): ",
+          "1 = event, 0 = censored, NA dropped. Date / POSIXct: present = 1, ",
+          "missing = 0. Strings are compared against an explicit token list ",
+          "(ja, j, yes, y, 1, x, true, wahr, tod, verstorben → 1; ",
+          "nein, n, no, 0, false, falsch, lebt, alive → 0; everything ",
+          "else → NA). Deliberately strict; \"10 months\" is NOT ",
+          "classified as an event (legacy v5 regression fixed)."
+        )
+      )),
+
+      shiny::h4(.h("Oncoprint-Klassifikation", "Oncoprint classification")),
+      shiny::p(.h(
+        paste0(
+          "Die Freitext-Mutationsspalte wird an Kommas und Zeilenumbrüchen ",
+          "gesplittet (Semikolons innerhalb von Klammern, z.B. ",
+          shiny::tags$code("t(11;14)"),
+          ", bleiben intakt). Jeder Eintrag wird klassifiziert via ",
+          shiny::tags$code("onc_alteration_type()"),
+          " in: „Mutation/Variante“, ",
+          "„negativ/kein Nachweis“, ",
+          "„Strukturell: Deletion/Loss“, ",
+          "„Zugewinn/Amplifikation“, ",
+          "„Translokation/Rearrangement/Bruch“, ",
+          "„Komplexer Karyotyp“ oder ",
+          "„Nicht verwertbar/NA“. ",
+          "Nur „Mutation/Variante“ geht in den Oncoprint-Kachelplot; ",
+          "strukturelle Befunde landen im separaten Zytogenetik-Tab."
+        ),
+        paste0(
+          "The free-text mutation column is split on commas and newlines ",
+          "(semicolons inside parentheses, e.g. ",
+          shiny::tags$code("t(11;14)"),
+          ", remain intact). Each entry is classified via ",
+          shiny::tags$code("onc_alteration_type()"),
+          " into: \"Mutation/Variante\", \"negativ/kein Nachweis\", ",
+          "\"Strukturell: Deletion/Loss\", \"Zugewinn/Amplifikation\", ",
+          "\"Translokation/Rearrangement/Bruch\", \"Komplexer Karyotyp\", ",
+          "or \"Nicht verwertbar/NA\". Only true mutations populate the ",
+          "oncoprint tile plot; structural findings show in a separate ",
+          "table and in the dedicated cytogenetics tab."
+        )
+      )),
+
+      shiny::h4(.h("Boxplots", "Box plots")),
+      shiny::p(.h(
+        paste0(
+          shiny::tags$code("ggplot2::geom_boxplot()"),
+          " mit Tukey-Definitionen (Whiskers = 1.5 × IQR; ",
+          "Median als Linie; Outlier ausgeblendet, optional ",
+          shiny::tags$code("geom_jitter()"),
+          " für Einzelwerte; optional log10-Y-Achse). ",
+          shiny::tags$b("Hinweis"),
+          ": kein statistischer Test im aktuellen Tab; ",
+          "Gruppenvergleiche bitte außerhalb der App durchführen."
+        ),
+        paste0(
+          shiny::tags$code("ggplot2::geom_boxplot()"),
+          " using Tukey definitions (whiskers = 1.5 × IQR; median as a ",
+          "line; outliers hidden, optional ",
+          shiny::tags$code("geom_jitter()"),
+          " for raw points; optional log10 Y axis). ",
+          shiny::tags$b("Note"),
+          ": no statistical test is computed in this tab; ",
+          "do group comparisons outside the app."
+        )
+      )),
+
+      shiny::h4(.h("Reproduzierbarkeit", "Reproducibility")),
+      shiny::tags$ul(
+        shiny::tags$li(.h(
+          paste0("R-Paket: ", shiny::tags$code("oncoscopR"),
+                 " mit 0/0/0 in R CMD check --as-cran und Testabdeckung ",
+                 "via covr."),
+          paste0("R package: ", shiny::tags$code("oncoscopR"),
+                 " — 0/0/0 in R CMD check --as-cran and covr coverage.")
+        )),
+        shiny::tags$li(.h(
+          paste0("Beispiel-Datensatz: 100 % synthetisch, gebundled unter ",
+                 shiny::tags$code("inst/extdata/onc_example.xlsx"),
+                 " (",
+                 shiny::tags$code("onc_example_path()"), ")."),
+          paste0("Example data: 100 % synthetic, bundled at ",
+                 shiny::tags$code("inst/extdata/onc_example.xlsx"),
+                 " (",
+                 shiny::tags$code("onc_example_path()"), ").")
+        )),
+        shiny::tags$li(.h(
+          paste0("Quelle und Issue-Tracker: ",
+                 shiny::tags$a(
+                   href = "https://github.com/CTTIR/oncoscopR",
+                   "github.com/CTTIR/oncoscopR")),
+          paste0("Source and issue tracker: ",
+                 shiny::tags$a(
+                   href = "https://github.com/CTTIR/oncoscopR",
+                   "github.com/CTTIR/oncoscopR"))
+        ))
+      )
+    )
+  })
 }
 
 # Fallback KM plot when survminer is absent. Renders a base ggplot KM curve
