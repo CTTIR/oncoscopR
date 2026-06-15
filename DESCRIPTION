@@ -30,6 +30,7 @@ Imports:
     DT,
     ggplot2,
     janitor,
+    lifecycle,
     lubridate,
     readxl,
     rlang,

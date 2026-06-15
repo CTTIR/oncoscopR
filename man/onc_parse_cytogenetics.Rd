@@ -18,6 +18,9 @@ Data frame with \code{patient_label}, \code{diagnose_label}, \code{alteration},
 tibble.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 Same logic as \code{\link[=onc_parse_oncoprint]{onc_parse_oncoprint()}} but consumes the separate
 \code{zytogenetik}/\code{karyotyp}/\code{fish} column. Used by the cytogenetics tab.
 }

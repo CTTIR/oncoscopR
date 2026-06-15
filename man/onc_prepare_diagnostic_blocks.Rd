@@ -10,13 +10,14 @@ onc_prepare_diagnostic_blocks(df)
 \item{df}{Data frame returned by \code{\link[=onc_read_diagnostics]{onc_read_diagnostics()}}.}
 }
 \value{
-Data frame with \code{patient}, \code{diagnose}, \code{datum}, \code{primaerfall},
-\code{patientenfall}, \code{jahr}, \code{monat_sort}, plus the component columns
-(Morphologie, Immunphaenotypisierung, Zytogenetik, Molekulargenetik).
-Empty input returns a 0-row tibble.
+A \link[=new_diagnostic_blocks]{diagnostic_blocks} S3 object with
+\code{patient}, \code{diagnose}, \code{datum}, \code{primaerfall}, \code{patientenfall}, \code{jahr},
+\code{monat_sort}, plus the component columns (Morphologie,
+Immunphaenotypisierung, Zytogenetik, Molekulargenetik). Empty input
+returns a 0-row object.
 }
 \description{
-Prepare OPS-1-941 complex-diagnostics blocks
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \seealso{
 Other parsers:

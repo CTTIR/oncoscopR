@@ -81,11 +81,16 @@ nrow(blocks)
 ## Kaplan-Meier (PFS)
 
 ```{r km, message = FALSE, warning = FALSE}
+event_col <- if ("rezidiv_event" %in% names(cohort)) {
+  cohort$rezidiv_event
+} else if ("rezidiv" %in% names(cohort)) {
+  cohort$rezidiv
+} else {
+  NULL
+}
 km <- data.frame(
   time = suppressWarnings(as.numeric(cohort$pfs)),
-  event = oncoscopR:::.as_event01(
-    cohort$rezidiv_event %||% cohort$rezidiv, mode = "auto"
-  )
+  event = oncoscopR:::.as_event01(event_col, mode = "auto")
 )
 km <- km[!is.na(km$time) & !is.na(km$event), ]
 fit <- survival::survfit(survival::Surv(time, event) ~ 1, data = km)

@@ -16,17 +16,20 @@ or the bundled example, obtained via \code{\link[=onc_example_path]{onc_example_
 detected.}
 }
 \value{
-A data frame with cleaned names, an added \code{behandlungsjahr}
-integer column, and a \code{"sheet_to_use"} attribute. Empty input
-workbooks return a 0-row data frame.
+A \link[=new_cohort_df]{cohort_df} S3 object (inheriting from
+\code{data.frame}) with cleaned names, an added integer \code{behandlungsjahr}
+column, and a \code{"sheet_to_use"} attribute. Empty input workbooks return
+a 0-row object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 Reads the primary cohort sheet from a tumour-documentation workbook,
 cleans column names via \code{janitor::clean_names()}, drops trailing empty
 \verb{none*} columns, and derives a \code{behandlungsjahr} (treatment year)
 column from the first available date column.
-}
-\details{
+
 Replaces the legacy \code{read_main_data()} from v5 which scanned \verb{~/Desktop}
 for \code{Daten.xlsx}. The package never reads \verb{~/Desktop}.
 }

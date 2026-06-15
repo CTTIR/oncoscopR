@@ -1,0 +1,30 @@
+# Caddy reverse-proxy with automatic Let's Encrypt TLS.
+#
+# Replace YOUR_DOMAIN with the production hostname. Caddy serves HTTPS on
+# 443 by default and forwards plain HTTP requests to the Shiny upstream
+# listening on the internal Docker network at oncoscopr:3838.
+#
+# Run alongside the image with docker-compose:
+#
+#   services:
+#     oncoscopr:
+#       build: .
+#       expose: ["3838"]
+#     caddy:
+#       image: caddy:2
+#       ports: ["80:80", "443:443"]
+#       volumes:
+#         - ./Caddyfile:/etc/caddy/Caddyfile
+#         - caddy_data:/data
+#         - caddy_config:/config
+#       depends_on: [oncoscopr]
+#   volumes:
+#     caddy_data: {}
+#     caddy_config: {}
+
+YOUR_DOMAIN {
+    encode zstd gzip
+    reverse_proxy oncoscopr:3838 {
+        flush_interval -1
+    }
+}

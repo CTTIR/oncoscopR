@@ -67,6 +67,21 @@ test_that("onc_parse_oncoprint splits, classifies and removes negatives", {
   expect_setequal(out$alteration, c("TP53", "NRAS"))
 })
 
+test_that("therapy parser preserves Date input and derives year+month", {
+  df <- data.frame(
+    ops8544 = c(1, 1),
+    patient = c("A", "B"),
+    therapieprotokoll = c("R-CHOP", "VRD"),
+    diagnose = c("DLBCL", "MM"),
+    datum = as.Date(c("2024-01-15", "2025-06-01")),
+    zyklusnr = c(1L, 1L),
+    stringsAsFactors = FALSE
+  )
+  out <- onc_prepare_therapy_blocks(df)
+  expect_identical(out$jahr, c(2024L, 2025L))
+  expect_identical(out$monat_sort, c("2024-01", "2025-06"))
+})
+
 test_that("onc_parse_cytogenetics aborts when zytogenetik column missing", {
   df <- data.frame(name = "A", diagnose = "AML")
   expect_error(onc_parse_cytogenetics(df), "zytogenetik")

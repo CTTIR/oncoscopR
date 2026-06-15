@@ -791,12 +791,32 @@ server <- function(input, output, session) {
         label <- paste0("Eigene Abfrage: ", col, " = Ja/positiv")
       } else if (mode == "exact") {
         shiny::validate(shiny::need(nzchar(value), .tr("Bitte einen Suchwert eingeben.")))
-        result <- dplyr::filter(df, tolower(trimws(as.character(.data[[col]]))) == tolower(trimws(value)))
+        # Diacritic-insensitive comparison so "hamatologisch" matches
+        # "hämatologisch". Falls back to plain tolower() if stringi missing.
+        ascii_lower <- function(x) {
+          if (requireNamespace("stringi", quietly = TRUE)) {
+            tolower(stringi::stri_trans_general(as.character(x), "Latin-ASCII"))
+          } else {
+            tolower(as.character(x))
+          }
+        }
+        result <- dplyr::filter(
+          df,
+          ascii_lower(trimws(as.character(.data[[col]]))) ==
+            ascii_lower(trimws(value))
+        )
         label <- paste0("Eigene Abfrage: ", col, " = ", value)
       } else if (mode == "contains") {
         shiny::validate(shiny::need(nzchar(value), .tr("Bitte einen Suchtext eingeben.")))
+        ascii_lower <- function(x) {
+          if (requireNamespace("stringi", quietly = TRUE)) {
+            tolower(stringi::stri_trans_general(as.character(x), "Latin-ASCII"))
+          } else {
+            tolower(as.character(x))
+          }
+        }
         result <- dplyr::filter(df, stringr::str_detect(
-          tolower(as.character(.data[[col]])), stringr::fixed(tolower(value))
+          ascii_lower(.data[[col]]), stringr::fixed(ascii_lower(value))
         ))
         label <- paste0("Eigene Abfrage: ", col, " enthält '", value, "'")
       } else if (mode == "documented") {
@@ -1040,13 +1060,22 @@ server <- function(input, output, session) {
     time <- suppressWarnings(as.numeric(df[[time_col]])) / input$km_time_div
     event <- as_event01(df[[event_col]], mode = event_mode)
     keep <- !is.na(time) & !is.na(event) & time >= 0 & event %in% c(0, 1)
+    n_excluded <- nrow(df) - sum(keep)
+    if (n_excluded > 0) {
+      shiny::showNotification(
+        paste0(.tr("Hinweis"), ": ", n_excluded, " ",
+               .tr("Zeile(n) aufgrund unparsbarer Zeit-/Eventwerte ausgeschlossen.")),
+        type = "warning", duration = 6
+      )
+    }
     shiny::validate(
       shiny::need(sum(keep) >= 2, paste0(
-        "Zu wenige verwertbare KM-Daten. Prüfen: ", time_col, " muss Monate enthalten; ",
-        event_col, " muss Ereignis/Zensierung enthalten."
+        .tr("Zu wenige verwertbare KM-Daten."), " ",
+        time_col, " ", .tr("muss Monate enthalten;"), " ",
+        event_col, " ", .tr("muss Ereignis/Zensierung enthalten.")
       )),
       shiny::need(sum(event[keep] == 1, na.rm = TRUE) >= 1,
-                  "Keine Ereignisse in der Auswahl.")
+                  .tr("Keine Ereignisse in der Auswahl."))
     )
     km_df <- data.frame(time = time[keep], event = as.integer(event[keep]))
     if (input$km_group != .tr("— keine —")) {

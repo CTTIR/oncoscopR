@@ -15,8 +15,8 @@ Long tibble with \code{patient}, \code{diagnose}, \code{jahr}, \code{monat_sort}
 tibble.
 }
 \description{
-Detects component columns (Morphologie/Immunphaenotypisierung/Zytogenetik/
-Molekulargenetik), pivots them long, normalises the display label, and
-filters to positive entries only.
+Detects component columns (Morphologie / Immunphaenotypisierung /
+Zytogenetik / Molekulargenetik), pivots them long, normalises the display
+label, and filters to positive entries only.
 }
 \keyword{internal}

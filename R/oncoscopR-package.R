@@ -35,4 +35,5 @@ NULL
 #' @importFrom ggplot2 ggplot
 #' @importFrom scales percent
 #' @importFrom survival survfit
+#' @importFrom lifecycle deprecate_warn
 NULL

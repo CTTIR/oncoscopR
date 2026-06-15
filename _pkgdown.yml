@@ -41,6 +41,12 @@ reference:
       - onc_normalize_alteration
       - onc_alteration_type
       - onc_is_mutation
+  - title: S3 classes
+    desc: Constructors for the data-frame wrappers returned by readers and parsers.
+    contents:
+      - new_cohort_df
+      - new_therapy_blocks
+      - new_diagnostic_blocks
 
 articles:
   - title: Getting started

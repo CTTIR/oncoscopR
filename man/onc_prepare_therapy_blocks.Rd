@@ -10,13 +10,16 @@ onc_prepare_therapy_blocks(df)
 \item{df}{Data frame returned by \code{\link[=onc_read_therapy]{onc_read_therapy()}}.}
 }
 \value{
-Data frame with at minimum:
-\code{therapieprotokoll}, \code{diagnose}, \code{patient}, \code{datum}, \code{zyklus}, \code{jahr},
-\code{monat_sort}. Empty input returns a 0-row tibble with this column set.
-Attribute \code{patient_cols_used} records which raw columns were coalesced
-into \code{patient}.
+A \link[=new_therapy_blocks]{therapy_blocks} S3 object (inheriting from
+\code{data.frame}) with at minimum: \code{therapieprotokoll}, \code{diagnose},
+\code{patient}, \code{datum}, \code{zyklus}, \code{jahr}, \code{monat_sort}. Empty input returns
+a 0-row object with this column set; the \code{patient_cols_used} attribute
+records which raw columns were coalesced into \code{patient}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 Reshapes the raw therapy sheet (as returned by \code{\link[=onc_read_therapy]{onc_read_therapy()}}) into
 the per-block tibble the dashboard counts. Counts every numeric
 OPS-8-544 entry > 0 as a positive block; falls back to deduplicating

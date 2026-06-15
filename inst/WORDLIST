@@ -105,9 +105,11 @@ covr
 cytogenetic
 cytogenetics
 de
+deduplicates
 deduplicating
 del
 docs
+dplyr
 fileInput
 filesystem
 ggplot
@@ -121,6 +123,7 @@ indikatoren
 karyotype
 karyotypic
 Kohorten
+monat
 Pre
 janitor
 karyotypischen
@@ -139,6 +142,7 @@ rezidiv
 roxygen
 scite
 shinytest
+subscripting
 shiny
 survfit
 survminer

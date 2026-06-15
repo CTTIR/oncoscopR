@@ -1,5 +1,7 @@
 #' Prepare OPS-8-544 therapy blocks for downstream analysis
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reshapes the raw therapy sheet (as returned by [onc_read_therapy()]) into
 #' the per-block tibble the dashboard counts. Counts every numeric
 #' OPS-8-544 entry > 0 as a positive block; falls back to deduplicating
@@ -7,11 +9,11 @@
 #'
 #' @param df Data frame returned by [onc_read_therapy()].
 #'
-#' @return Data frame with at minimum:
-#'   `therapieprotokoll`, `diagnose`, `patient`, `datum`, `zyklus`, `jahr`,
-#'   `monat_sort`. Empty input returns a 0-row tibble with this column set.
-#'   Attribute `patient_cols_used` records which raw columns were coalesced
-#'   into `patient`.
+#' @return A [therapy_blocks][new_therapy_blocks] S3 object (inheriting from
+#'   `data.frame`) with at minimum: `therapieprotokoll`, `diagnose`,
+#'   `patient`, `datum`, `zyklus`, `jahr`, `monat_sort`. Empty input returns
+#'   a 0-row object with this column set; the `patient_cols_used` attribute
+#'   records which raw columns were coalesced into `patient`.
 #'
 #' @family parsers
 #' @export
@@ -84,11 +86,19 @@ onc_prepare_therapy_blocks <- function(df) {
   blocks$patient <- .first_nonempty_col(
     blocks, c(patient_name_cols, patient_id_cols)
   )
-  attr(blocks, "patient_cols_used") <- paste(
+  patient_cols_used <- paste(
     c(patient_name_cols, patient_id_cols), collapse = ", "
   )
 
-  blocks$datum <- get_chr(blocks, date_col, NA_character_)
+  # Respect Date / POSIXct input; only coerce to character if it isn't already.
+  if (is.null(date_col) || !(date_col %in% names(blocks))) {
+    blocks$datum <- rep(NA_character_, nrow(blocks))
+  } else if (inherits(blocks[[date_col]], c("Date", "POSIXct", "POSIXt"))) {
+    blocks$.datum_raw <- blocks[[date_col]]
+    blocks$datum <- format(blocks[[date_col]], "%Y-%m-%d")
+  } else {
+    blocks$datum <- as.character(blocks[[date_col]])
+  }
   blocks$zyklus <- get_chr(blocks, cycle_col, NA_character_)
 
   empty_prot <- is.na(blocks$therapieprotokoll) |
@@ -97,18 +107,25 @@ onc_prepare_therapy_blocks <- function(df) {
   empty_diag <- is.na(blocks$diagnose) | trimws(blocks$diagnose) == ""
   blocks$diagnose[empty_diag] <- "Nicht angegeben"
 
-  blocks <- .attach_year_month(blocks, "datum")
-  blocks
+  blocks <- .attach_year_month(
+    blocks,
+    date_col_name = if (".datum_raw" %in% names(blocks)) ".datum_raw" else "datum"
+  )
+  blocks$.datum_raw <- NULL
+  new_therapy_blocks(blocks, patient_cols_used = patient_cols_used)
 }
 
 #' Prepare OPS-1-941 complex-diagnostics blocks
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' @param df Data frame returned by [onc_read_diagnostics()].
 #'
-#' @return Data frame with `patient`, `diagnose`, `datum`, `primaerfall`,
-#'   `patientenfall`, `jahr`, `monat_sort`, plus the component columns
-#'   (Morphologie, Immunphaenotypisierung, Zytogenetik, Molekulargenetik).
-#'   Empty input returns a 0-row tibble.
+#' @return A [diagnostic_blocks][new_diagnostic_blocks] S3 object with
+#'   `patient`, `diagnose`, `datum`, `primaerfall`, `patientenfall`, `jahr`,
+#'   `monat_sort`, plus the component columns (Morphologie,
+#'   Immunphaenotypisierung, Zytogenetik, Molekulargenetik). Empty input
+#'   returns a 0-row object.
 #'
 #' @family parsers
 #' @export
@@ -162,7 +179,14 @@ onc_prepare_diagnostic_blocks <- function(df) {
   blocks$diagnose <- get_chr(blocks, diag_col, "Nicht angegeben")
   empty_diag <- is.na(blocks$diagnose) | trimws(blocks$diagnose) == ""
   blocks$diagnose[empty_diag] <- "Nicht angegeben"
-  blocks$datum <- get_chr(blocks, date_col, NA_character_)
+  if (is.null(date_col) || !(date_col %in% names(blocks))) {
+    blocks$datum <- rep(NA_character_, nrow(blocks))
+  } else if (inherits(blocks[[date_col]], c("Date", "POSIXct", "POSIXt"))) {
+    blocks$.datum_raw <- blocks[[date_col]]
+    blocks$datum <- format(blocks[[date_col]], "%Y-%m-%d")
+  } else {
+    blocks$datum <- as.character(blocks[[date_col]])
+  }
   blocks$primaerfall <- if (!is.null(primary_col)) {
     .as_yesno(blocks[[primary_col]])
   } else {
@@ -174,22 +198,31 @@ onc_prepare_diagnostic_blocks <- function(df) {
     rep(NA, nrow(blocks))
   }
 
-  comp_candidates <- names(blocks)[
-    grepl("morph|immun|zyto|cyto|molekular|molecular|genetik|diagnostik",
-          names(blocks), ignore.case = TRUE)
-  ]
-  comp_candidates <- setdiff(comp_candidates, c(ops_col, ".diag_event"))
-  attr(blocks, "component_cols") <- paste(comp_candidates, collapse = ", ")
+  # Tighter component-column whitelist: only the four canonical OPS-1-941
+  # components count. Loose substring matches like `psychoonkologische_diagnostik`
+  # are explicitly excluded by anchoring the regex with `^`.
+  component_patterns <- c(
+    "morph", "immun", "zyto", "cyto", "molekular", "molecular"
+  )
+  comp_re <- paste0("^(", paste(component_patterns, collapse = "|"), ")")
+  candidate_names <- names(blocks)[grepl(comp_re, names(blocks),
+                                         ignore.case = TRUE)]
+  comp_candidates <- setdiff(candidate_names, c(ops_col, ".diag_event"))
+  component_cols <- paste(comp_candidates, collapse = ", ")
 
-  blocks <- .attach_year_month(blocks, "datum")
-  blocks
+  blocks <- .attach_year_month(
+    blocks,
+    date_col_name = if (".datum_raw" %in% names(blocks)) ".datum_raw" else "datum"
+  )
+  blocks$.datum_raw <- NULL
+  new_diagnostic_blocks(blocks, component_cols = component_cols)
 }
 
 #' Pivot diagnostic-block components into long form
 #'
-#' Detects component columns (Morphologie/Immunphaenotypisierung/Zytogenetik/
-#' Molekulargenetik), pivots them long, normalises the display label, and
-#' filters to positive entries only.
+#' Detects component columns (Morphologie / Immunphaenotypisierung /
+#' Zytogenetik / Molekulargenetik), pivots them long, normalises the display
+#' label, and filters to positive entries only.
 #'
 #' @param blocks Tibble from [onc_prepare_diagnostic_blocks()].
 #'
@@ -207,10 +240,12 @@ onc_prepare_diagnostic_blocks <- function(df) {
   )
   if (is.null(blocks) || nrow(blocks) == 0L) return(empty)
 
-  comp_cols <- names(blocks)[
-    grepl("morph|immun|zyto|cyto|molekular|molecular|genetik",
-          names(blocks), ignore.case = TRUE)
-  ]
+  component_patterns <- c(
+    "morph", "immun", "zyto", "cyto", "molekular", "molecular"
+  )
+  comp_re <- paste0("^(", paste(component_patterns, collapse = "|"), ")")
+  comp_cols <- names(blocks)[grepl(comp_re, names(blocks),
+                                   ignore.case = TRUE)]
   if (length(comp_cols) == 0L) return(empty)
 
   long <- tidyr::pivot_longer(
@@ -228,15 +263,17 @@ onc_prepare_diagnostic_blocks <- function(df) {
 
   long$diagnostik_bereich <- dplyr::case_when(
     grepl("morph", long$diagnostik_bereich, ignore.case = TRUE) ~ "Morphologie",
-    grepl("immun", long$diagnostik_bereich, ignore.case = TRUE) ~ "Immunph\u00e4notypisierung",
+    grepl("immun", long$diagnostik_bereich, ignore.case = TRUE) ~ "Immunphaenotypisierung",
     grepl("zyto|cyto", long$diagnostik_bereich, ignore.case = TRUE) ~ "Zytogenetik",
-    grepl("molekular|molecular|genetik", long$diagnostik_bereich, ignore.case = TRUE) ~ "Molekulargenetik",
+    grepl("molekular|molecular", long$diagnostik_bereich, ignore.case = TRUE) ~ "Molekulargenetik",
     TRUE ~ long$diagnostik_bereich
   )
   long[long$positiv, , drop = FALSE]
 }
 
 #' Parse the oncoprint free-text mutation column
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' Splits the free-text mutation column into per-alteration rows, classifies
 #' each entry via [onc_alteration_type()], and flags genuine mutations for
@@ -294,6 +331,8 @@ onc_parse_oncoprint <- function(df, remove_negative = TRUE) {
 
 #' Parse the cytogenetics free-text column
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' Same logic as [onc_parse_oncoprint()] but consumes the separate
 #' `zytogenetik`/`karyotyp`/`fish` column. Used by the cytogenetics tab.
 #'
@@ -332,136 +371,4 @@ onc_parse_cytogenetics <- function(df, remove_negative = TRUE) {
     remove_negative = remove_negative,
     distinct_extra = NULL
   )
-}
-
-# Shared body of the oncoprint + cytogenetics pipelines.
-#' @keywords internal
-.alteration_pipeline <- function(df, source_col, diag_col, patient_col,
-                                 value_label, remove_negative,
-                                 distinct_extra) {
-  n <- nrow(df)
-  tmp <- data.frame(
-    .row_id = seq_len(n),
-    patient_label = if (!is.null(patient_col)) {
-      as.character(df[[patient_col]])
-    } else {
-      paste0("Fall_", seq_len(n))
-    },
-    diagnose_label = as.character(df[[diag_col]]),
-    raw_full = as.character(df[[source_col]]),
-    stringsAsFactors = FALSE
-  )
-  tmp <- tmp[!is.na(tmp$raw_full) & trimws(tmp$raw_full) != "", , drop = FALSE]
-  if (nrow(tmp) == 0L) {
-    return(.empty_alteration_table(
-      include_oncoprint_flag = !is.null(distinct_extra),
-      raw_name = value_label
-    ))
-  }
-
-  # Split on commas and newlines only -- semicolons inside parens (e.g.
-  # "t(11;14)") are part of the cytogenetic notation, not a separator.
-  tmp$raw_full <- stringr::str_replace_all(tmp$raw_full, "\\n|\\r|/", ",")
-  tmp <- tidyr::separate_rows(tmp, "raw_full", sep = ",")
-  tmp$raw_full <- trimws(tmp$raw_full)
-  tmp$alteration <- onc_normalize_alteration(tmp$raw_full)
-  tmp$alteration_class <- onc_alteration_type(tmp$raw_full)
-  if (!is.null(distinct_extra)) {
-    tmp$oncoprint_mutation <- onc_is_mutation(tmp$alteration_class)
-  }
-  names(tmp)[names(tmp) == "raw_full"] <- value_label
-
-  keep <- !is.na(tmp$alteration) & tmp$alteration != "" &
-    !tolower(tmp$alteration) %in% c("na", "n.a.", "n/a", "nan", "null") &
-    tmp$alteration_class != "Nicht verwertbar/NA"
-  tmp <- tmp[keep, , drop = FALSE]
-
-  if (isTRUE(remove_negative)) {
-    tmp <- tmp[tmp$alteration_class != "negativ/kein Nachweis", , drop = FALSE]
-  }
-
-  dist_cols <- c("patient_label", "diagnose_label", "alteration",
-                 "alteration_class")
-  if (!is.null(distinct_extra)) dist_cols <- c(dist_cols, distinct_extra)
-  if (value_label == "zytogenetik_raw") dist_cols <- c(dist_cols, value_label)
-  tmp <- tmp[!duplicated(tmp[, dist_cols, drop = FALSE]), , drop = FALSE]
-  rownames(tmp) <- NULL
-  tmp$.row_id <- NULL
-  tmp
-}
-
-# ---- Empty contracts ------------------------------------------------------
-#' @keywords internal
-.empty_therapy_blocks <- function() {
-  out <- data.frame(
-    therapieprotokoll = character(),
-    diagnose = character(),
-    patient = character(),
-    datum = character(),
-    zyklus = character(),
-    jahr = integer(),
-    monat_sort = character(),
-    stringsAsFactors = FALSE
-  )
-  attr(out, "patient_cols_used") <- ""
-  out
-}
-
-#' @keywords internal
-.empty_diagnostic_blocks <- function() {
-  out <- data.frame(
-    patient = character(),
-    diagnose = character(),
-    datum = character(),
-    primaerfall = logical(),
-    patientenfall = logical(),
-    jahr = integer(),
-    monat_sort = character(),
-    stringsAsFactors = FALSE
-  )
-  attr(out, "component_cols") <- ""
-  out
-}
-
-#' @keywords internal
-.empty_alteration_table <- function(include_oncoprint_flag,
-                                    raw_name = "alteration_raw") {
-  out <- data.frame(
-    patient_label = character(),
-    diagnose_label = character(),
-    alteration = character(),
-    alteration_class = character(),
-    stringsAsFactors = FALSE
-  )
-  if (include_oncoprint_flag) out$oncoprint_mutation <- logical()
-  out[[raw_name]] <- character()
-  out
-}
-
-#' @keywords internal
-.attach_year_month <- function(blocks, date_col_name) {
-  d <- blocks[[date_col_name]]
-  parsed_date <- suppressWarnings(lubridate::as_date(d))
-  year_from_date <- suppressWarnings(lubridate::year(parsed_date))
-  year_from_text <- suppressWarnings(
-    as.integer(sub(".*(20[0-9]{2}).*", "\\1", d))
-  )
-  bad_year <- is.na(year_from_text) | year_from_text < 2000 |
-    year_from_text > 2100
-  year_from_text[bad_year] <- NA_integer_
-  blocks$jahr <- ifelse(!is.na(year_from_date), year_from_date, year_from_text)
-
-  month_from_date <- ifelse(
-    !is.na(parsed_date), format(parsed_date, "%Y-%m"), NA_character_
-  )
-  month_from_text <- ifelse(
-    !is.na(blocks$jahr),
-    paste0(blocks$jahr, "-",
-           sprintf("%02d", suppressWarnings(as.integer(substr(d, 4, 5))))),
-    NA_character_
-  )
-  blocks$monat_sort <- ifelse(
-    !is.na(month_from_date), month_from_date, month_from_text
-  )
-  blocks
 }

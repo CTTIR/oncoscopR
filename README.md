@@ -82,18 +82,23 @@ accepts the canonical sheets `Basisdaten`, `Komplexe Chemotherapie`, and
 ## Public API
 
 | Function | Purpose |
-|----|----|
-| `onc_run_app()` | Launch the Shiny dashboard |
+|:---|:---|
+| `new_cohort_df()` | S3 constructor for the cohort wrapper |
+| `new_diagnostic_blocks()` | S3 constructor for the diagnostic-block wrapper |
+| `new_therapy_blocks()` | S3 constructor for the therapy-block wrapper |
+| `onc_alteration_type()` | Classify a free-text alteration string |
 | `onc_example_path()` | Path to the bundled synthetic workbook |
-| `onc_read_cohort()` | Read the Basisdaten sheet |
-| `onc_read_therapy()` | Read the OPS-8-544 complex-chemotherapy sheet |
-| `onc_read_diagnostics()` | Read the OPS-1-941 complex-diagnostics sheet |
-| `onc_read_tumorboard()` | Load a previously exported tumour-board CSV |
-| `onc_prepare_therapy_blocks()` | Per-block tibble for OPS-8-544 |
-| `onc_prepare_diagnostic_blocks()` | Per-case tibble for OPS-1-941 |
-| `onc_parse_oncoprint()` | Split + classify the mutation free-text column |
+| `onc_is_mutation()` | Predicate: belongs in the oncoprint? |
+| `onc_normalize_alteration()` | Strip Mutation/Mut suffix, collapse whitespace |
 | `onc_parse_cytogenetics()` | Split + classify the cytogenetics column |
-| `onc_normalize_alteration()`, `onc_alteration_type()`, `onc_is_mutation()` | Classification helpers |
+| `onc_parse_oncoprint()` | Split + classify the mutation free-text column |
+| `onc_prepare_diagnostic_blocks()` | Per-case S3 object for OPS-1-941 |
+| `onc_prepare_therapy_blocks()` | Per-block S3 object for OPS-8-544 |
+| `onc_read_cohort()` | Read the Basisdaten sheet |
+| `onc_read_diagnostics()` | Read the OPS-1-941 complex-diagnostics sheet |
+| `onc_read_therapy()` | Read the OPS-8-544 complex-chemotherapy sheet |
+| `onc_read_tumorboard()` | Load a previously exported tumour-board CSV |
+| `onc_run_app()` | Launch the Shiny dashboard |
 
 See the [reference index](https://cttir.github.io/oncoscopR/reference/)
 for parameter and return-type contracts.

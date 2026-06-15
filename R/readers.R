@@ -125,6 +125,8 @@
 
 #' Read the cohort sheet (Basisdaten / Faelle)
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reads the primary cohort sheet from a tumour-documentation workbook,
 #' cleans column names via `janitor::clean_names()`, drops trailing empty
 #' `none*` columns, and derives a `behandlungsjahr` (treatment year)
@@ -139,9 +141,10 @@
 #' @param verbose Logical; emit a `cli_inform` when duplicate columns are
 #'   detected.
 #'
-#' @return A data frame with cleaned names, an added `behandlungsjahr`
-#'   integer column, and a `"sheet_to_use"` attribute. Empty input
-#'   workbooks return a 0-row data frame.
+#' @return A [cohort_df][new_cohort_df] S3 object (inheriting from
+#'   `data.frame`) with cleaned names, an added integer `behandlungsjahr`
+#'   column, and a `"sheet_to_use"` attribute. Empty input workbooks return
+#'   a 0-row object.
 #'
 #' @family readers
 #' @export
@@ -157,8 +160,7 @@ onc_read_cohort <- function(path, sheet = NULL, verbose = TRUE) {
   df <- janitor::clean_names(df)
   df <- .clean_duplicate_columns(df, verbose = verbose)
   df <- .add_year(df)
-  attr(df, "sheet_to_use") <- sheet_to_use
-  df
+  new_cohort_df(df, sheet_to_use = sheet_to_use)
 }
 
 #' Read the OPS-8-544 (complex chemotherapy) sheet
@@ -269,7 +271,13 @@ onc_read_tumorboard <- function(path = NULL) {
   }
   df <- tryCatch(
     utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE),
-    error = function(e) empty
+    error = function(e) {
+      cli::cli_warn(c(
+        "Failed to parse tumour-board CSV at {.path {path}}.",
+        "i" = "Returned an empty table; the original message was: {conditionMessage(e)}"
+      ))
+      empty
+    }
   )
   if (nrow(df) == 0L) return(empty)
   if ("Board_Datum" %in% names(df)) {

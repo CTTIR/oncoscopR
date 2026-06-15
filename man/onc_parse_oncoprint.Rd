@@ -19,11 +19,13 @@ A data frame with one row per (patient, alteration) pair:
 tibble with this column set.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 Splits the free-text mutation column into per-alteration rows, classifies
 each entry via \code{\link[=onc_alteration_type]{onc_alteration_type()}}, and flags genuine mutations for
 the oncoprint tile plot.
-}
-\details{
+
 Unlike the legacy v5 implementation, this function does not call
 \code{\link[shiny:validate]{shiny::validate()}} -- packaged functions must work outside Shiny. If the
 required source column is missing, the function raises a \code{cli::cli_abort}
