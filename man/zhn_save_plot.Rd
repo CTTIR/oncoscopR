@@ -42,6 +42,7 @@ zhn_save_plot(p, tmp, format = "png", width = 6, height = 4)
 }
 \seealso{
 Other figures:
+\code{\link[=zhn_km_pairwise]{zhn_km_pairwise()}},
 \code{\link{zhn_pal}},
 \code{\link[=zhn_plot_cases_by_year]{zhn_plot_cases_by_year()}},
 \code{\link[=zhn_plot_diagnoses]{zhn_plot_diagnoses()}},

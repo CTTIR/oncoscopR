@@ -16,6 +16,7 @@ figures to suite purple by changing \code{accent} to \code{"#5E2C8E"} here.
 }
 \seealso{
 Other figures:
+\code{\link[=zhn_km_pairwise]{zhn_km_pairwise()}},
 \code{\link[=zhn_plot_cases_by_year]{zhn_plot_cases_by_year()}},
 \code{\link[=zhn_plot_diagnoses]{zhn_plot_diagnoses()}},
 \code{\link[=zhn_plot_km]{zhn_plot_km()}},

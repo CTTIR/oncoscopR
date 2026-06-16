@@ -85,35 +85,32 @@ blocks |>
 nrow(blocks)
 ```
 
-## Kaplan-Meier (PFS)
+## Kaplan-Meier — publication-ready
 
-```{r km, message = FALSE, warning = FALSE}
-event_col <- if ("rezidiv_event" %in% names(cohort)) {
-  cohort$rezidiv_event
-} else if ("rezidiv" %in% names(cohort)) {
-  cohort$rezidiv
-} else {
-  NULL
-}
-km <- data.frame(
-  time  = suppressWarnings(as.numeric(cohort$pfs)),
-  event = zhncommandR:::.as_event01(event_col, mode = "auto")
-) |>
-  dplyr::filter(!is.na(time), !is.na(event))
+`zhn_plot_km()` builds a publication-ready survival figure with
+[ggsurvfit](https://www.danieldsjoberg.com/ggsurvfit/); every element (CI, risk
+table, censor marks, log-rank p, Cox HR, median, pairwise comparisons, axis and
+legend) is an argument and is honoured in the PNG/PDF export. A single overall
+curve with confidence interval, censor marks and a numbers-at-risk table:
 
-fit <- survival::survfit(survival::Surv(time, event) ~ 1, data = km)
-
-# Tidy the survfit step function, then draw it with ggplot2 (start at (0, 1)).
-km_curve <- dplyr::bind_rows(
-  data.frame(time = 0, surv = 1),
-  data.frame(time = fit$time, surv = fit$surv)
-)
-ggplot2::ggplot(km_curve, ggplot2::aes(x = time, y = surv)) +
-  ggplot2::geom_step() +
-  ggplot2::scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
-  ggplot2::labs(x = "Monate", y = "PFS", title = "Beispiel-PFS (synthetisch)") +
-  ggplot2::theme_minimal(base_size = 12)
+```{r km-default, eval = requireNamespace("ggsurvfit", quietly = TRUE), message = FALSE, warning = FALSE, fig.height = 6}
+zhn_plot_km(cohort, time_col = "os", event_col = "death_event",
+            title = "Gesamtüberleben (synthetisch)")
 ```
+
+Stratified by entity, with the log-rank p-value and the median-survival
+reference lines:
+
+```{r km-grouped, eval = requireNamespace("ggsurvfit", quietly = TRUE), message = FALSE, warning = FALSE, fig.height = 6}
+zhn_plot_km(cohort, time_col = "os", event_col = "death_event",
+            group_col = "geschlecht", show_pvalue = TRUE, show_median = TRUE,
+            title = "Gesamtüberleben nach Geschlecht")
+```
+
+For a two-group comparison, `show_hr = TRUE` adds the Cox hazard ratio with its
+95% CI. The hazard ratio always ships with a `survival::cox.zph()`
+proportional-hazards check: when the assumption looks violated, a caution note
+is added to the caption rather than reporting the HR silently.
 
 ## Oncoprint table
 

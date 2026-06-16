@@ -2,39 +2,99 @@
 % Please edit documentation in R/plots.R
 \name{zhn_plot_km}
 \alias{zhn_plot_km}
-\title{Figure: Kaplan-Meier survival curve}
+\title{Publication-ready Kaplan-Meier plot (ggsurvfit)}
 \usage{
 zhn_plot_km(
-  fit,
+  data,
+  time_col,
+  event_col,
+  group_col = NULL,
+  conf_int = TRUE,
+  conf_level = 0.95,
+  conf_type = "log-log",
+  risktable = TRUE,
+  risktable_stats = "n.risk",
+  censor_marks = TRUE,
+  show_pvalue = TRUE,
+  show_hr = FALSE,
+  show_median = FALSE,
+  y_scale = c("survival", "percent", "cuminc"),
+  x_break = NULL,
+  x_max = NULL,
+  legend_pos = "top",
   title = NULL,
-  xlab = "Monate",
-  ylab = "Wahrscheinlichkeit",
-  transparent = FALSE,
-  show_ci = TRUE
+  subtitle = NULL,
+  caption = NULL,
+  transparent = FALSE
 )
 }
 \arguments{
-\item{fit}{A \link[survival:survfit]{survival::survfit} object (single curve or with strata).}
+\item{data}{A data frame / cohort with the time and event columns.}
 
-\item{title}{Optional plot title; omitted when \code{NULL}/empty.}
+\item{time_col, event_col}{Column names (character) for follow-up time and
+event; the event is parsed to 0/1 via the package's hardened coercion.}
 
-\item{xlab, ylab}{Axis labels.}
+\item{group_col}{Optional grouping column (character), or \code{NULL} for one
+overall curve.}
 
-\item{transparent}{Passed to \code{\link[=zhn_theme]{zhn_theme()}}.}
+\item{conf_int}{Logical; show confidence-interval ribbons.}
 
-\item{show_ci}{Draw the confidence-interval ribbon.}
+\item{conf_level}{CI level (e.g. 0.90/0.95/0.99).}
+
+\item{conf_type}{CI method: \code{"log-log"} (default), \code{"log"}, or \code{"plain"}.}
+
+\item{risktable}{Logical; show the numbers-at-risk table below the plot.}
+
+\item{risktable_stats}{Which rows: any of \code{"n.risk"}, \code{"n.censor"},
+\code{"n.event"}.}
+
+\item{censor_marks}{Logical; show censoring tick marks.}
+
+\item{show_pvalue}{Logical; annotate the log-rank p-value (>= 2 groups).}
+
+\item{show_hr}{Logical; annotate the Cox HR with 95\% CI (exactly 2 groups),
+always with a \code{cox.zph} proportional-hazards check and a caution note when
+violated.}
+
+\item{show_median}{Logical; draw reference lines at the median survival.}
+
+\item{y_scale}{\code{"survival"} (0-1), \code{"percent"} (0-100), or \code{"cuminc"}
+(1 - S).}
+
+\item{x_break}{Numeric x-axis break interval, or \code{NULL} for automatic.}
+
+\item{x_max}{Numeric x-axis truncation, or \code{NULL} for full range.}
+
+\item{legend_pos}{\code{"top"}, \code{"right"}, \code{"bottom"}, or \code{"none"}.}
+
+\item{title, subtitle, caption}{Character or \code{NULL}.}
+
+\item{transparent}{Logical; transparent background for display/export.}
 }
 \value{
-A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
+A \pkg{ggsurvfit}/ggplot object; a patchwork composite when
+\code{risktable = TRUE}. Carries an \code{"n_groups"} attribute.
 }
 \description{
-Draws a themed Kaplan-Meier curve from a fitted \link[survival:survfit]{survival::survfit} object.
-Unlike the other figures the KM plot keeps an in-plot title (user-editable in
-the app). A single overall curve uses the Hugo Coder blue accent; multiple
-strata use a blue-anchored, greyscale-safe viridis ("mako") ramp.
+Builds a themed Kaplan-Meier figure with \pkg{ggsurvfit}. Every publication
+element is an argument; the same call drives the live app and the PNG/PDF
+export. With a risk table the return value is the aligned plot+table
+composite (\code{\link[ggsurvfit:ggsurvfit_build]{ggsurvfit::ggsurvfit_build()}} output) so \code{\link[=zhn_save_plot]{zhn_save_plot()}} writes
+the full figure. This is the one figure that keeps an (editable) title.
+}
+\examples{
+\donttest{
+if (requireNamespace("ggsurvfit", quietly = TRUE)) {
+  co <- zhn_read_cohort(zhn_example_path(), verbose = FALSE)
+  zhn_plot_km(co, "os", "death_event")                 # default single curve
+  zhn_plot_km(co, "os", "death_event", group_col = "geschlecht",
+              show_pvalue = TRUE)                       # grouped + log-rank
+}
+}
 }
 \seealso{
 Other figures:
+\code{\link[=zhn_km_pairwise]{zhn_km_pairwise()}},
 \code{\link{zhn_pal}},
 \code{\link[=zhn_plot_cases_by_year]{zhn_plot_cases_by_year()}},
 \code{\link[=zhn_plot_diagnoses]{zhn_plot_diagnoses()}},

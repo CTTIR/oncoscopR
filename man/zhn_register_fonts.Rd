@@ -19,6 +19,7 @@ back to the default device font (see \code{\link[=zhn_theme]{zhn_theme()}}); it 
 }
 \seealso{
 Other figures:
+\code{\link[=zhn_km_pairwise]{zhn_km_pairwise()}},
 \code{\link{zhn_pal}},
 \code{\link[=zhn_plot_cases_by_year]{zhn_plot_cases_by_year()}},
 \code{\link[=zhn_plot_diagnoses]{zhn_plot_diagnoses()}},

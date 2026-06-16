@@ -22,11 +22,12 @@ A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
 }
 \description{
 Counts the most frequent values of a diagnosis/coding column and draws a
-horizontal bar chart in the Hugo Coder look. Title-less by design — the name
+horizontal bar chart in the Hugo Coder look. Title-less by design -- the name
 lives in the card header and the export filename, not in the plot.
 }
 \seealso{
 Other figures:
+\code{\link[=zhn_km_pairwise]{zhn_km_pairwise()}},
 \code{\link{zhn_pal}},
 \code{\link[=zhn_plot_cases_by_year]{zhn_plot_cases_by_year()}},
 \code{\link[=zhn_plot_km]{zhn_plot_km()}},

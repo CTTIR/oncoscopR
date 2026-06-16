@@ -1,4 +1,5 @@
 ABVD
+ae
 ALL
 AML
 Apache
@@ -9,20 +10,26 @@ BEACOPP
 Behandlungsjahr
 behaviour
 Beispieldaten
+Benjamini
+BH
 Bisphosphonate
 Bruch
 bsicons
 bslib
+censoring
 centre
 centres
 Chemotherapie
 CLL
 CMD
 Codecov
+colours
 copyediting
 covr
+Cox
 CRAN
 CTTIR
+cuminc
 cytogenetic
 cytogenetics
 DA
@@ -51,6 +58,7 @@ Follikuläres
 ggplot
 ggsurvfit
 ggsurvplot
+gridlines
 GWDG
 haem
 Häematol
@@ -60,8 +68,10 @@ haematology
 Hämatologisches
 HIV
 HL
+Hochberg
 hochladen
 Hodgkin
+honoured
 HWitte
 Immunphaenotypisierung
 Immunphänotypisierung
@@ -90,6 +100,7 @@ MDS
 Meier
 Mistral
 mklocale
+modelling
 Molekulargenetik
 monat
 Morphologie
@@ -101,6 +112,8 @@ NHL
 Normalise
 normalises
 NRAS
+oe
+OFL
 Ollama
 ollamar
 oncoprint
@@ -129,6 +142,7 @@ Referenzpathologie
 rezidiv
 Rezidiv
 Risk
+risktable
 roxygen
 ROxygen
 Schemata
@@ -137,7 +151,10 @@ SD
 shiny
 shinytest
 SimData
+Slugify
+slugifying
 Sozialdienst
+ss
 Strukturelle
 subscripting
 survfit
@@ -156,6 +173,7 @@ Tumorboardbeschlüsse
 Tumorkonferenz
 Tumorzentrum
 tumour
+ue
 UI
 Verantwortlich
 VRD

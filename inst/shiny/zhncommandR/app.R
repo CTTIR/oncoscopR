@@ -69,6 +69,9 @@ i18n$set_translation_language("de")
 # Tiny helper: translate fallback to original if a key is missing.
 .tr <- function(s) i18n$t(s)
 
+# NULL/empty-coalescing helper for reading inputs with sane fallbacks.
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+
 # Compact PNG (600 dpi) + PDF download pair for a figure card (ids match the
 # server-side .dl_handlers registration: <id>_png / <id>_pdf).
 .dl_ui <- function(id) {
@@ -307,10 +310,19 @@ ui <- shiny::fluidPage(
               shiny::br(), shiny::br(),
               .dl_ui("dl_km")
             )),
-            shiny::column(8, bslib::card(
-              bslib::card_header(.tr("Kaplan–Meier Plot")),
-              shiny::plotOutput("km_plot", height = 560)
-            ))
+            shiny::column(8,
+              bslib::card(
+                bslib::card_header(.tr("Kaplan–Meier Plot")),
+                shiny::plotOutput("km_plot", height = 560)
+              ),
+              shiny::conditionalPanel(
+                "input.km_pairwise",
+                bslib::card(
+                  bslib::card_header(.tr("Paarweise Log-rank (BH-korrigiert)")),
+                  DT::DTOutput("km_pairwise_table")
+                )
+              )
+            )
           )
         ),
         shiny::tabPanel(
@@ -480,19 +492,19 @@ server <- function(input, output, session) {
   # Register PNG (600 dpi) + PDF (vector) download handlers for one figure.
   # `plot_reactive` yields the on-screen ggplot; `name` is the export basename
   # (a string, or a function returning one — used for the KM custom title).
-  .dl_handlers <- function(id, plot_reactive, name) {
+  .dl_handlers <- function(id, plot_reactive, name, width = 8, height = 5) {
     base <- function() if (is.function(name)) name() else name
     output[[paste0(id, "_png")]] <- shiny::downloadHandler(
       filename = function() paste0(base(), "_", Sys.Date(), ".png"),
       content  = function(file) zhncommandR::zhn_save_plot(
-        plot_reactive(), file, format = "png",
+        plot_reactive(), file, format = "png", width = width, height = height,
         transparent = isTRUE(input$fig_transparent)
       )
     )
     output[[paste0(id, "_pdf")]] <- shiny::downloadHandler(
       filename = function() paste0(base(), "_", Sys.Date(), ".pdf"),
       content  = function(file) zhncommandR::zhn_save_plot(
-        plot_reactive(), file, format = "pdf",
+        plot_reactive(), file, format = "pdf", width = width, height = height,
         transparent = isTRUE(input$fig_transparent)
       )
     )
@@ -1057,120 +1069,162 @@ server <- function(input, output, session) {
   )
 
   # ------------------------------------------------------------------
-  # Kaplan-Meier (uses survminer if available, base ggplot fallback otherwise)
+  # Kaplan-Meier — publication-ready, rendered with ggsurvfit (zhn_plot_km)
   # ------------------------------------------------------------------
+  # Live count of levels in the selected grouping (drives stat gating).
+  km_n_groups <- shiny::reactive({
+    df <- data_filtered()
+    g <- input$km_group
+    if (is.null(g) || g == "__none__" || !g %in% names(df)) return(1L)
+    length(unique(stats::na.omit(df[[g]])))
+  })
+
   output$km_ui <- shiny::renderUI({
     df <- data_filtered(); shiny::req(nrow(df) > 0)
     num_cols <- names(df)[vapply(df, is.numeric, logical(1L))]
-    cat_cols <- names(df)[vapply(df, function(x) is.character(x) || is.factor(x), logical(1L))]
-    diagnose_choices <- if ("diagnose" %in% names(df)) {
-      sort(unique(stats::na.omit(as.character(df$diagnose))))
-    } else character(0)
-    shiny::tagList(
-      shiny::selectInput("km_endpoint", .tr("Analyse"), choices = c(
-        "PFS automatisch: PFS + Rezidiv Event" = "pfs_auto",
-        "OS automatisch: OS + Death Event" = "os_auto",
-        "Manuell" = "manual"
-      ), selected = "os_auto"),
-      shiny::selectizeInput("km_diagnosis", .tr("Diagnose/Entität für KM-Kurve"),
-                            choices = c("Alle Diagnosen" = "__all__", diagnose_choices),
-                            selected = "__all__", multiple = FALSE),
-      shiny::selectInput("km_time", .tr("Zeitvariable manuell"), choices = num_cols,
-                         selected = if ("pfs" %in% num_cols) "pfs" else num_cols[1]),
-      shiny::selectInput("km_event", .tr("Eventvariable manuell"), choices = names(df),
-                         selected = if ("rezidiv_event" %in% names(df)) "rezidiv_event"
-                                    else if ("rezidiv" %in% names(df)) "rezidiv"
-                                    else if ("death_event" %in% names(df)) "death_event"
-                                    else names(df)[1]),
-      shiny::selectInput("km_group", .tr("Gruppe/Stratum optional"),
-                         choices = c(.tr("— keine —"), cat_cols), selected = .tr("— keine —")),
-      shiny::checkboxInput("km_confint", .tr("Konfidenzintervall"), TRUE),
-      shiny::checkboxInput("km_risktable", .tr("Risk Table"), TRUE),
-      shiny::numericInput("km_time_div",
-                          .tr("Zeit-Skalierung: 1 = Monate, 12 = Jahre"),
-                          value = 1, min = 0.0001),
-      shiny::textInput("km_title", .tr("Titel"), value = .tr("Kaplan–Meier-Kurve")),
-      shiny::textInput("km_xlab", .tr("X-Achse"), value = .tr("Monate")),
-      shiny::textInput("km_ylab", .tr("Y-Achse"), value = .tr("Wahrscheinlichkeit"))
+    cat_cols <- names(df)[vapply(df, function(x) is.character(x) || is.factor(x),
+                                 logical(1L))]
+    sel_time  <- if ("os" %in% num_cols) "os" else if ("pfs" %in% num_cols) "pfs"
+                 else num_cols[1]
+    sel_event <- if ("death_event" %in% names(df)) "death_event"
+                 else if ("rezidiv_event" %in% names(df)) "rezidiv_event"
+                 else names(df)[1]
+    bslib::accordion(
+      open = .tr("Daten/Endpunkt"),
+      bslib::accordion_panel(
+        .tr("Daten/Endpunkt"),
+        shiny::selectInput("km_time", .tr("Zeitvariable"),
+                           choices = num_cols, selected = sel_time),
+        shiny::selectInput("km_event", .tr("Ereignisvariable"),
+                           choices = names(df), selected = sel_event),
+        shiny::selectInput("km_group", .tr("Gruppierung"),
+                           choices = c(stats::setNames("__none__", .tr("(keine)")),
+                                       stats::setNames(cat_cols, cat_cols)),
+                           selected = "__none__")
+      ),
+      bslib::accordion_panel(
+        .tr("Statistik"),
+        shiny::checkboxInput("km_ci", .tr("Konfidenzintervall"), TRUE),
+        shiny::conditionalPanel(
+          "input.km_ci",
+          shiny::selectInput("km_ci_level", .tr("CI-Niveau"),
+                             c("90%" = 0.90, "95%" = 0.95, "99%" = 0.99),
+                             selected = 0.95),
+          shiny::selectInput("km_ci_type", .tr("CI-Methode"),
+                             c("log-log", "log", "plain"), selected = "log-log")
+        ),
+        shiny::checkboxInput("km_risktable",
+                             .tr("Risikotabelle (numbers at risk)"), TRUE),
+        shiny::conditionalPanel(
+          "input.km_risktable",
+          shiny::checkboxGroupInput(
+            "km_risktable_stats", .tr("Zeilen"),
+            choices = c("Unter Risiko" = "n.risk", "Zensiert" = "n.censor",
+                        "Ereignisse" = "n.event"),
+            selected = "n.risk"
+          )
+        ),
+        shiny::checkboxInput("km_pvalue",
+                             .tr("Log-rank p-Wert (≥ 2 Gruppen)"), TRUE),
+        shiny::checkboxInput("km_hr",
+                             .tr("Hazard Ratio (Cox, genau 2 Gruppen)"), FALSE),
+        shiny::checkboxInput("km_median",
+                             .tr("Median-Überleben markieren"), FALSE),
+        shiny::checkboxInput("km_censor", .tr("Zensur-Markierungen"), TRUE),
+        shiny::checkboxInput("km_pairwise",
+                             .tr("Paarweise Vergleiche, BH (> 2 Gruppen)"), FALSE)
+      ),
+      bslib::accordion_panel(
+        .tr("Darstellung"),
+        shiny::radioButtons("km_yscale", .tr("Y-Skala"),
+          c("Überleben (0-1)" = "survival", "Prozent" = "percent",
+            "Kumulative Inzidenz" = "cuminc"), selected = "survival"),
+        shiny::numericInput("km_xbreak", .tr("X-Achsen-Intervall"),
+                            value = NA, min = 1),
+        shiny::numericInput("km_xmax", .tr("X-Achse maximal"),
+                            value = NA, min = 1),
+        shiny::selectInput("km_legend", .tr("Legende"),
+          c("oben" = "top", "rechts" = "right", "unten" = "bottom",
+            "keine" = "none"), selected = "top"),
+        shiny::textInput("km_title", .tr("Titel"),
+                         value = "Kaplan-Meier-Überlebenskurve"),
+        shiny::textInput("km_subtitle", .tr("Untertitel"), value = ""),
+        shiny::textInput("km_caption", .tr("Fußnote"), value = "")
+      )
     )
   })
 
   km_plot_obj <- shiny::eventReactive(input$run_km, {
     df <- data_filtered()
     shiny::validate(shiny::need(nrow(df) > 1, .tr("Zu wenige Daten nach Filter.")))
-    if (!is.null(input$km_diagnosis) && input$km_diagnosis != "__all__" &&
-        "diagnose" %in% names(df)) {
-      df <- dplyr::filter(df, as.character(.data$diagnose) == input$km_diagnosis)
-    }
-    endpoint <- input$km_endpoint
-    if (endpoint == "pfs_auto") {
-      time_col <- "pfs"
-      event_col <- if ("rezidiv_event" %in% names(df)) "rezidiv_event" else "rezidiv"
-      event_mode <- "auto"
-      default_title <- paste0("PFS", if (!is.null(input$km_diagnosis) && input$km_diagnosis != "__all__") paste0(" – ", input$km_diagnosis) else "")
-    } else if (endpoint == "os_auto") {
-      time_col <- "os"; event_col <- "death_event"; event_mode <- "auto"
-      default_title <- paste0("OS", if (!is.null(input$km_diagnosis) && input$km_diagnosis != "__all__") paste0(" – ", input$km_diagnosis) else "")
-    } else {
-      shiny::req(input$km_time, input$km_event)
-      time_col <- input$km_time; event_col <- input$km_event
-      event_mode <- if (event_col == "rezidiv") "date_event" else "auto"
-      default_title <- input$km_title
-    }
-    shiny::validate(
-      shiny::need(time_col %in% names(df), paste0(.tr("Zeitspalte '"), time_col, .tr("' nicht gefunden."))),
-      shiny::need(event_col %in% names(df), paste0(.tr("Eventspalte '"), event_col, .tr("' nicht gefunden.")))
-    )
-    time <- suppressWarnings(as.numeric(df[[time_col]])) / input$km_time_div
-    event <- as_event01(df[[event_col]], mode = event_mode)
-    keep <- !is.na(time) & !is.na(event) & time >= 0 & event %in% c(0, 1)
-    n_excluded <- nrow(df) - sum(keep)
-    if (n_excluded > 0) {
-      shiny::showNotification(
-        paste0(.tr("Hinweis"), ": ", n_excluded, " ",
-               .tr("Zeile(n) aufgrund unparsbarer Zeit-/Eventwerte ausgeschlossen.")),
-        type = "warning", duration = 6
-      )
-    }
-    shiny::validate(
-      shiny::need(sum(keep) >= 2, paste0(
-        .tr("Zu wenige verwertbare KM-Daten."), " ",
-        time_col, " ", .tr("muss Monate enthalten;"), " ",
-        event_col, " ", .tr("muss Ereignis/Zensierung enthalten.")
-      )),
-      shiny::need(sum(event[keep] == 1, na.rm = TRUE) >= 1,
-                  .tr("Keine Ereignisse in der Auswahl."))
-    )
-    km_df <- data.frame(time = time[keep], event = as.integer(event[keep]))
-    if (input$km_group != .tr("— keine —")) {
-      km_df$grp <- as.factor(df[[input$km_group]][keep])
-      km_df <- km_df[!is.na(km_df$grp), , drop = FALSE]
-      fit <- survival::survfit(survival::Surv(time, event) ~ grp, data = km_df)
-    } else {
-      fit <- survival::survfit(survival::Surv(time, event) ~ 1, data = km_df)
-    }
-    title_to_use <- if (!is.null(input$km_title) && nzchar(input$km_title) &&
-                        input$km_title != .tr("Kaplan–Meier-Kurve")) {
-      input$km_title
-    } else default_title
+    shiny::req(input$km_time, input$km_event)
+    grp <- if (!is.null(input$km_group) && input$km_group != "__none__") {
+      input$km_group
+    } else NULL
+    n_g <- km_n_groups()
+    # Conditional enabling: gate stats by group count (hard rule 5).
+    show_p  <- isTRUE(input$km_pvalue)   && n_g >= 2L
+    show_hr <- isTRUE(input$km_hr)       && n_g == 2L
+    xbk <- if (is.null(input$km_xbreak) || is.na(input$km_xbreak)) NULL else input$km_xbreak
+    xmx <- if (is.null(input$km_xmax) || is.na(input$km_xmax)) NULL else input$km_xmax
 
-    zhncommandR::zhn_plot_km(
-      fit,
-      title       = title_to_use,
-      xlab        = input$km_xlab,
-      ylab        = input$km_ylab,
-      transparent = isTRUE(input$fig_transparent),
-      show_ci     = isTRUE(input$km_confint)
+    # The plot function raises conditions; surface them as validate messages.
+    res <- tryCatch(
+      zhncommandR::zhn_plot_km(
+        df, time_col = input$km_time, event_col = input$km_event,
+        group_col = grp,
+        conf_int = isTRUE(input$km_ci),
+        conf_level = as.numeric(input$km_ci_level %||% 0.95),
+        conf_type = input$km_ci_type %||% "log-log",
+        risktable = isTRUE(input$km_risktable),
+        risktable_stats = input$km_risktable_stats %||% "n.risk",
+        censor_marks = isTRUE(input$km_censor),
+        show_pvalue = show_p, show_hr = show_hr,
+        show_median = isTRUE(input$km_median),
+        y_scale = input$km_yscale %||% "survival",
+        x_break = xbk, x_max = xmx,
+        legend_pos = input$km_legend %||% "top",
+        title = input$km_title, subtitle = input$km_subtitle,
+        caption = input$km_caption,
+        transparent = isTRUE(input$fig_transparent)
+      ),
+      error = function(e) e
     )
+    shiny::validate(shiny::need(
+      !inherits(res, "error"),
+      if (inherits(res, "error")) conditionMessage(res) else ""
+    ))
+    res
   }, ignoreNULL = FALSE)
 
   output$km_plot <- shiny::renderPlot(
     { g <- km_plot_obj(); shiny::req(g); g },
     bg = "transparent"
   )
-  # KM export basename = slugified custom title (§10), else kaplan_meier.
+  # KM export basename = slugified custom title (§10); roomy for the risk table.
   .dl_handlers("dl_km", km_plot_obj, function() {
     zhncommandR:::.slugify(input$km_title, fallback = "kaplan_meier")
+  }, width = 8, height = 6.5)
+
+  # Pairwise log-rank (BH) table — only when the toggle is on and groups > 2.
+  output$km_pairwise_table <- DT::renderDT({
+    shiny::req(isTRUE(input$km_pairwise))
+    df <- data_filtered()
+    g <- input$km_group
+    shiny::validate(
+      shiny::need(!is.null(g) && g != "__none__", .tr("Gruppierung wählen.")),
+      shiny::need(km_n_groups() > 2L,
+                  .tr("Paarweise Vergleiche benötigen mehr als zwei Gruppen."))
+    )
+    pw <- tryCatch(
+      zhncommandR::zhn_km_pairwise(df, input$km_time, input$km_event, g),
+      error = function(e) e
+    )
+    shiny::validate(shiny::need(!inherits(pw, "error"),
+      if (inherits(pw, "error")) conditionMessage(pw) else ""))
+    pw$p_roh <- round(pw$p_roh, 4)
+    pw$p_BH  <- round(pw$p_BH, 4)
+    DT::datatable(pw, rownames = FALSE, options = list(dom = "t", scrollX = TRUE))
   })
 
   # ------------------------------------------------------------------
@@ -1852,9 +1906,9 @@ server <- function(input, output, session) {
             "Surv() und survfit() für Kaplan-Meier-Schätzungen.",
             "Surv() and survfit() for Kaplan-Meier estimates."
           ))),
-          shiny::tags$tr(shiny::tags$td("survminer (Suggests)"), shiny::tags$td(.h(
-            "ggsurvplot() für KM-Visualisierung; bei Abwesenheit base-ggplot-Fallback.",
-            "ggsurvplot() for KM visualisation; falls back to base-ggplot."
+          shiny::tags$tr(shiny::tags$td("ggsurvfit"), shiny::tags$td(.h(
+            "Publikationsreife KM-Kurven inkl. Risikotabelle, KI, Zensur-Marken.",
+            "Publication-ready KM curves with risk table, CI and censor marks."
           ))),
           shiny::tags$tr(shiny::tags$td("ggplot2"), shiny::tags$td(.h(
             "Alle Plots (Balken, Linien, Oncoprint-Kacheln, Boxplots).",
@@ -1958,20 +2012,20 @@ server <- function(input, output, session) {
           ": Nicht-parametrische Überlebenswahrscheinlichkeit ",
           "via ", shiny::tags$code("survival::survfit(Surv(time, event) ~ 1)"),
           " (oder ~ grp für Stratifizierung). Punktweise ",
-          "Konfidenzintervalle nach Greenwood-Methode (Default). ",
-          "Visualisierung mit ", shiny::tags$code("survminer::ggsurvplot()"),
-          " inkl. Risk-Table; ohne survminer wird ein base-ggplot-Fallback ",
-          "verwendet (geom_step + geom_ribbon)."
+          "Konfidenzintervalle (Default log-log). ",
+          "Visualisierung mit ", shiny::tags$code("ggsurvfit"),
+          " (zhn_plot_km): Risikotabelle, Zensur-Marken, Log-rank-p, ",
+          "Cox-HR mit cox.zph-Prüfung, paarweise BH-Vergleiche."
         ),
         paste0(
           shiny::tags$b("Model"),
           ": non-parametric survival via ",
           shiny::tags$code("survival::survfit(Surv(time, event) ~ 1)"),
           " (or ~ grp for stratification). Point-wise confidence intervals ",
-          "via Greenwood's formula (default). Visualised with ",
-          shiny::tags$code("survminer::ggsurvplot()"),
-          " incl. risk table; falls back to base-ggplot (geom_step + ",
-          "geom_ribbon) when survminer is unavailable."
+          "(default log-log). Visualised with ",
+          shiny::tags$code("ggsurvfit"),
+          " (zhn_plot_km): risk table, censor marks, log-rank p, Cox HR with ",
+          "cox.zph check, and pairwise BH comparisons."
         )
       )),
       shiny::p(.h(

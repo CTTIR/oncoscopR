@@ -29,6 +29,7 @@ Figure: cases per treatment year (vertical bar)
 }
 \seealso{
 Other figures:
+\code{\link[=zhn_km_pairwise]{zhn_km_pairwise()}},
 \code{\link{zhn_pal}},
 \code{\link[=zhn_plot_diagnoses]{zhn_plot_diagnoses()}},
 \code{\link[=zhn_plot_km]{zhn_plot_km()}},
