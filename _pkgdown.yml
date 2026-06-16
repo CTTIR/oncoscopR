@@ -47,6 +47,20 @@ reference:
       - new_cohort_df
       - new_therapy_blocks
       - new_diagnostic_blocks
+  - title: Figures
+    desc: Publication-ready figures in the Hugo Coder look.
+    contents:
+      - zhn_plot_diagnoses
+      - zhn_plot_cases_by_year
+      - zhn_plot_km
+      - zhn_km_pairwise
+      - zhn_theme
+      - zhn_pal
+  - title: Export and fonts
+    desc: Save figures to paper-ready files and register the bundled font.
+    contents:
+      - zhn_save_plot
+      - zhn_register_fonts
 
 articles:
   - title: Articles
