@@ -79,7 +79,10 @@ ui <- shiny::fluidPage(
           height = "32",
           style = "display:inline-block;"
         ),
-        shiny::h4(.tr("Auditor-App"), class = "m-0")
+        shiny::h4(.tr("Auditor-App"), class = "m-0"),
+        # Instant light/dark toggle (flips data-bs-theme; styled in custom.scss).
+        # Client-side only — no reload, no external calls.
+        bslib::input_dark_mode(id = "color_mode", class = "ms-auto")
       ),
 
       # --- Language toggle DE / EN -------------------------------------

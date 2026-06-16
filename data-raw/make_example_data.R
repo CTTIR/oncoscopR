@@ -157,17 +157,20 @@ komplexe_diagnostik <- data.frame(
   stringsAsFactors = FALSE
 )
 
-out_path <- file.path("inst", "extdata", "zhn_example.xlsx")
-dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
-openxlsx::write.xlsx(
-  list(
-    "Basisdaten"            = basisdaten,
-    "Komplexe Chemotherapie" = komplexe_chemo,
-    "Komplexe Diagnostik"   = komplexe_diagnostik
-  ),
-  file = out_path,
-  overwrite = TRUE
+workbook <- list(
+  "Basisdaten"            = basisdaten,
+  "Komplexe Chemotherapie" = komplexe_chemo,
+  "Komplexe Diagnostik"   = komplexe_diagnostik
 )
 
-message("Wrote ", out_path,
-        " (", file.info(out_path)$size, " bytes)")
+out_path <- file.path("inst", "extdata", "zhn_example.xlsx")
+dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
+openxlsx::write.xlsx(workbook, file = out_path, overwrite = TRUE)
+message("Wrote ", out_path, " (", file.info(out_path)$size, " bytes)")
+
+# Also refresh the build-ignored root sample (SimData.xlsx) so a convenient
+# upload-test file for the Shiny app exists and stays in sync. Same 100 %
+# synthetic content as the bundled example.
+sim_path <- "SimData.xlsx"
+openxlsx::write.xlsx(workbook, file = sim_path, overwrite = TRUE)
+message("Wrote ", sim_path, " (", file.info(sim_path)$size, " bytes)")
