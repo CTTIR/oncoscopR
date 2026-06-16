@@ -18,6 +18,15 @@ Opens the auditor live-evaluation dashboard. With no data file uploaded
 the app starts empty; the "Beispieldaten laden" button loads the
 synthetic example cohort.
 }
+\details{
+The app is copied to a session temporary directory and run from there.
+\code{\link[shiny:runApp]{shiny::runApp()}} sets the working directory to the app folder, so running
+it directly from the package library would keep that folder open and block
+updating or reinstalling the package on Windows ("device or resource busy")
+while the app is running. Running from a temp copy avoids that lock; the
+package's own files (translations, example data) are still read from the
+installed library via \code{\link[=system.file]{system.file()}}.
+}
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 zhn_run_app()
