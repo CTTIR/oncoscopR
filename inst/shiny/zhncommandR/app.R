@@ -72,24 +72,24 @@ ui <- shiny::fluidPage(
     sidebar = bslib::sidebar(
       width = 390,
       shiny::div(
-        class = "d-flex align-items-center gap-2 mb-2",
+        class = "d-flex align-items-center gap-3 mb-3",
         shiny::tags$img(
           src = "logo.svg",
           alt = "zhncommandR logo",
-          height = "32",
+          height = "72",
           style = "display:inline-block;"
         ),
-        shiny::h4(.tr("Auditor-App"), class = "m-0"),
+        shiny::h2("zhncommandR", class = "m-0"),
         # Instant light/dark toggle (flips data-bs-theme; styled in custom.scss).
         # Client-side only — no reload, no external calls.
         bslib::input_dark_mode(id = "color_mode", class = "ms-auto")
       ),
 
-      # --- Language toggle DE / EN -------------------------------------
+      # --- Language toggle DE / EN (no label) --------------------------
       shiny::div(
         class = "mb-2",
         shiny::radioButtons(
-          "lang", .tr("Sprache / Language"),
+          "lang", label = NULL,
           choices = c("Deutsch" = "de", "English" = "en"),
           selected = "de", inline = TRUE
         )
@@ -634,6 +634,10 @@ server <- function(input, output, session) {
       "bisphosphonate_denosumab", "hiv_hepatitis"
     )
     indicators <- intersect(indicators, names(df))
+    shiny::validate(shiny::need(
+      nrow(df) > 0 && length(indicators) > 0,
+      .tr("Keine Daten geladen.")
+    ))
     out <- lapply(indicators, function(v) {
       val <- df[[v]]
       yes <- sum(as_yesno(val) %in% TRUE, na.rm = TRUE)

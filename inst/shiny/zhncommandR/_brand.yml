@@ -25,6 +25,6 @@ color:
 
 typography:
   base:
-    family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif
+    family: 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif'
   monospace:
-    family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace
+    family: '"SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
