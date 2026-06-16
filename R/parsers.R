@@ -2,12 +2,12 @@
 #'
 #' `r lifecycle::badge("experimental")`
 #'
-#' Reshapes the raw therapy sheet (as returned by [onc_read_therapy()]) into
+#' Reshapes the raw therapy sheet (as returned by [zhn_read_therapy()]) into
 #' the per-block tibble the dashboard counts. Counts every numeric
 #' OPS-8-544 entry > 0 as a positive block; falls back to deduplicating
 #' Patient/Datum/Zyklus/Protokoll combinations when no OPS column exists.
 #'
-#' @param df Data frame returned by [onc_read_therapy()].
+#' @param df Data frame returned by [zhn_read_therapy()].
 #'
 #' @return A [therapy_blocks][new_therapy_blocks] S3 object (inheriting from
 #'   `data.frame`) with at minimum: `therapieprotokoll`, `diagnose`,
@@ -17,7 +17,7 @@
 #'
 #' @family parsers
 #' @export
-onc_prepare_therapy_blocks <- function(df) {
+zhn_prepare_therapy_blocks <- function(df) {
   empty <- .empty_therapy_blocks()
   if (is.null(df) || nrow(df) == 0L) return(empty)
 
@@ -119,7 +119,7 @@ onc_prepare_therapy_blocks <- function(df) {
 #'
 #' `r lifecycle::badge("experimental")`
 #'
-#' @param df Data frame returned by [onc_read_diagnostics()].
+#' @param df Data frame returned by [zhn_read_diagnostics()].
 #'
 #' @return A [diagnostic_blocks][new_diagnostic_blocks] S3 object with
 #'   `patient`, `diagnose`, `datum`, `primaerfall`, `patientenfall`, `jahr`,
@@ -129,7 +129,7 @@ onc_prepare_therapy_blocks <- function(df) {
 #'
 #' @family parsers
 #' @export
-onc_prepare_diagnostic_blocks <- function(df) {
+zhn_prepare_diagnostic_blocks <- function(df) {
   empty <- .empty_diagnostic_blocks()
   if (is.null(df) || nrow(df) == 0L) return(empty)
 
@@ -224,7 +224,7 @@ onc_prepare_diagnostic_blocks <- function(df) {
 #' Zytogenetik / Molekulargenetik), pivots them long, normalises the display
 #' label, and filters to positive entries only.
 #'
-#' @param blocks Tibble from [onc_prepare_diagnostic_blocks()].
+#' @param blocks Tibble from [zhn_prepare_diagnostic_blocks()].
 #'
 #' @return Long tibble with `patient`, `diagnose`, `jahr`, `monat_sort`,
 #'   `diagnostik_bereich`, `wert`, `positiv`. Empty input returns a 0-row
@@ -276,7 +276,7 @@ onc_prepare_diagnostic_blocks <- function(df) {
 #' `r lifecycle::badge("experimental")`
 #'
 #' Splits the free-text mutation column into per-alteration rows, classifies
-#' each entry via [onc_alteration_type()], and flags genuine mutations for
+#' each entry via [zhn_alteration_type()], and flags genuine mutations for
 #' the oncoprint tile plot.
 #'
 #' Unlike the legacy v5 implementation, this function does not call
@@ -284,7 +284,7 @@ onc_prepare_diagnostic_blocks <- function(df) {
 #' required source column is missing, the function raises a `cli::cli_abort`
 #' so the server layer can wrap the message with `validate(need(...))`.
 #'
-#' @param df Cohort data frame from [onc_read_cohort()].
+#' @param df Cohort data frame from [zhn_read_cohort()].
 #' @param remove_negative Logical; drop `"negativ/kein Nachweis"` entries
 #'   (default `TRUE`).
 #'
@@ -295,7 +295,7 @@ onc_prepare_diagnostic_blocks <- function(df) {
 #'
 #' @family parsers
 #' @export
-onc_parse_oncoprint <- function(df, remove_negative = TRUE) {
+zhn_parse_oncoprint <- function(df, remove_negative = TRUE) {
   empty <- .empty_alteration_table(include_oncoprint_flag = TRUE)
   if (is.null(df) || nrow(df) == 0L) return(empty)
 
@@ -333,10 +333,10 @@ onc_parse_oncoprint <- function(df, remove_negative = TRUE) {
 #'
 #' `r lifecycle::badge("experimental")`
 #'
-#' Same logic as [onc_parse_oncoprint()] but consumes the separate
+#' Same logic as [zhn_parse_oncoprint()] but consumes the separate
 #' `zytogenetik`/`karyotyp`/`fish` column. Used by the cytogenetics tab.
 #'
-#' @inheritParams onc_parse_oncoprint
+#' @inheritParams zhn_parse_oncoprint
 #'
 #' @return Data frame with `patient_label`, `diagnose_label`, `alteration`,
 #'   `alteration_class`, `zytogenetik_raw`. Empty input returns a 0-row
@@ -344,7 +344,7 @@ onc_parse_oncoprint <- function(df, remove_negative = TRUE) {
 #'
 #' @family parsers
 #' @export
-onc_parse_cytogenetics <- function(df, remove_negative = TRUE) {
+zhn_parse_cytogenetics <- function(df, remove_negative = TRUE) {
   empty <- .empty_alteration_table(include_oncoprint_flag = FALSE,
                                    raw_name = "zytogenetik_raw")
   if (is.null(df) || nrow(df) == 0L) return(empty)

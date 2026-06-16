@@ -1,9 +1,9 @@
-# oncoscopR -- Shiny dashboard image
+# zhncommandR -- Shiny dashboard image
 #
 # Build:
-#   docker build -t oncoscoprrr/oncoscopr:latest -f docker/Dockerfile .
+#   docker build -t cttir/zhncommandr:latest -f docker/Dockerfile .
 # Run:
-#   docker run --rm -p 3838:3838 oncoscoprrr/oncoscopr:latest
+#   docker run --rm -p 3838:3838 cttir/zhncommandr:latest
 #
 # Behind Caddy + TLS see docker/Caddyfile.
 
@@ -32,17 +32,17 @@ ENV RENV_CONFIG_PPM_ENABLED=TRUE \
     RENV_CONFIG_REPOS_OVERRIDE=https://packagemanager.posit.co/cran/__linux__/jammy/latest \
     R_REMOTES_NO_ERRORS_FROM_WARNINGS=true
 
-WORKDIR /srv/oncoscopR
-COPY DESCRIPTION /srv/oncoscopR/DESCRIPTION
+WORKDIR /srv/zhncommandR
+COPY DESCRIPTION /srv/zhncommandR/DESCRIPTION
 
 # Install package dependencies (Imports + Suggests that the app uses).
 RUN R -q -e "install.packages(c('pak'), repos = 'https://cloud.r-project.org')" \
     && R -q -e "pak::local_install_deps('.', dependencies = c('Imports','LinkingTo'))" \
     && R -q -e "pak::pak(c('survminer','shiny.i18n','thematic','sass','openxlsx'))"
 
-COPY . /srv/oncoscopR
-RUN R CMD INSTALL --no-html --no-help /srv/oncoscopR \
+COPY . /srv/zhncommandR
+RUN R CMD INSTALL --no-html --no-help /srv/zhncommandR \
     && rm -rf /tmp/Rtmp*
 
 EXPOSE 3838
-CMD ["R", "-e", "oncoscopR::onc_run_app(host = '0.0.0.0', port = 3838)"]
+CMD ["R", "-e", "zhncommandR::zhn_run_app(host = '0.0.0.0', port = 3838)"]

@@ -1,4 +1,4 @@
-Package: oncoscopR
+Package: zhncommandR
 Type: Package
 Title: Audit and Analysis Dashboard for Haematological Oncology Cohorts
 Version: 0.1.0
@@ -14,9 +14,9 @@ Description: Reads tumour-documentation spreadsheets from haematological tumour
     interactive Shiny dashboard for auditor live evaluation. Includes a fully
     synthetic example cohort for demonstration and testing.
 License: MIT + file LICENSE
-URL: https://github.com/CTTIR/oncoscopR,
-    https://cttir.github.io/oncoscopR/
-BugReports: https://github.com/CTTIR/oncoscopR/issues
+URL: https://github.com/CTTIR/zhncommandR,
+    https://cttir.github.io/zhncommandR/
+BugReports: https://github.com/CTTIR/zhncommandR/issues
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)

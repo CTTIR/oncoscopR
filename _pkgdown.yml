@@ -1,11 +1,11 @@
-url: https://cttir.github.io/oncoscopR/
+url: https://cttir.github.io/zhncommandR/
 
 template:
   package: themakR
   light-switch: true
 
 home:
-  title: oncoscopR — auditor dashboard for haematological oncology cohorts
+  title: zhncommandR — auditor dashboard for haematological oncology cohorts
   description: >
     Reads tumour-documentation spreadsheets, computes quality and coverage
     indicators, OPS-8-544 and OPS-1-941 counting, Kaplan-Meier analyses,
@@ -20,27 +20,27 @@ navbar:
 reference:
   - title: Launch the dashboard
     contents:
-      - onc_run_app
-      - onc_example_path
+      - zhn_run_app
+      - zhn_example_path
   - title: Readers
     desc: Read tumour-documentation Excel sheets.
     contents:
-      - onc_read_cohort
-      - onc_read_therapy
-      - onc_read_diagnostics
-      - onc_read_tumorboard
+      - zhn_read_cohort
+      - zhn_read_therapy
+      - zhn_read_diagnostics
+      - zhn_read_tumorboard
   - title: Parsers
     desc: Reshape and classify the raw sheets for downstream analysis.
     contents:
-      - onc_prepare_therapy_blocks
-      - onc_prepare_diagnostic_blocks
-      - onc_parse_oncoprint
-      - onc_parse_cytogenetics
+      - zhn_prepare_therapy_blocks
+      - zhn_prepare_diagnostic_blocks
+      - zhn_parse_oncoprint
+      - zhn_parse_cytogenetics
   - title: Alteration classification helpers
     contents:
-      - onc_normalize_alteration
-      - onc_alteration_type
-      - onc_is_mutation
+      - zhn_normalize_alteration
+      - zhn_alteration_type
+      - zhn_is_mutation
   - title: S3 classes
     desc: Constructors for the data-frame wrappers returned by readers and parsers.
     contents:
@@ -51,4 +51,4 @@ reference:
 articles:
   - title: Getting started
     contents:
-      - oncoscopR
+      - zhncommandR

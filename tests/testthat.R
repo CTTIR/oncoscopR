@@ -1,4 +1,4 @@
 library(testthat)
-library(oncoscopR)
+library(zhncommandR)
 
-test_check("oncoscopR")
+test_check("zhncommandR")

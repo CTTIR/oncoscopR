@@ -136,7 +136,7 @@
 #' for `Daten.xlsx`. The package never reads `~/Desktop`.
 #'
 #' @param path Path to the `.xlsx` file (typically a `fileInput()` temp path
-#'   or the bundled example, obtained via [onc_example_path()]).
+#'   or the bundled example, obtained via [zhn_example_path()]).
 #' @param sheet Optional sheet name to override the canonical/regex resolver.
 #' @param verbose Logical; emit a `cli_inform` when duplicate columns are
 #'   detected.
@@ -150,10 +150,10 @@
 #' @export
 #' @examples
 #' if (interactive()) {
-#'   df <- onc_read_cohort(onc_example_path())
+#'   df <- zhn_read_cohort(zhn_example_path())
 #'   head(df)
 #' }
-onc_read_cohort <- function(path, sheet = NULL, verbose = TRUE) {
+zhn_read_cohort <- function(path, sheet = NULL, verbose = TRUE) {
   sheet_to_use <- .resolve_sheet(path, "cohort", sheet)
   df <- readxl::read_excel(path, sheet = sheet_to_use)
   df <- as.data.frame(df)
@@ -170,14 +170,14 @@ onc_read_cohort <- function(path, sheet = NULL, verbose = TRUE) {
 #' missing, returns a 0-row data frame with a `"source_label"` attribute
 #' describing the situation; the dashboard surfaces this in the therapy tab.
 #'
-#' @inheritParams onc_read_cohort
+#' @inheritParams zhn_read_cohort
 #'
 #' @return A data frame with cleaned names and a `"source_label"` attribute.
 #'   0-row if no therapy sheet exists.
 #'
 #' @family readers
 #' @export
-onc_read_therapy <- function(path, sheet = NULL, verbose = TRUE) {
+zhn_read_therapy <- function(path, sheet = NULL, verbose = TRUE) {
   out_label <- function(label) {
     out <- data.frame()
     attr(out, "source_label") <- label
@@ -209,14 +209,14 @@ onc_read_therapy <- function(path, sheet = NULL, verbose = TRUE) {
 #' Reads the diagnostics sheet — canonical name `Komplexe Diagnostik`.
 #' If missing, returns a 0-row data frame with a `"source_label"` attribute.
 #'
-#' @inheritParams onc_read_cohort
+#' @inheritParams zhn_read_cohort
 #'
 #' @return A data frame with cleaned names and a `"source_label"` attribute.
 #'   0-row if no diagnostics sheet exists.
 #'
 #' @family readers
 #' @export
-onc_read_diagnostics <- function(path, sheet = NULL, verbose = TRUE) {
+zhn_read_diagnostics <- function(path, sheet = NULL, verbose = TRUE) {
   out_label <- function(label) {
     out <- data.frame()
     attr(out, "source_label") <- label
@@ -257,7 +257,7 @@ onc_read_diagnostics <- function(path, sheet = NULL, verbose = TRUE) {
 #'
 #' @family readers
 #' @export
-onc_read_tumorboard <- function(path = NULL) {
+zhn_read_tumorboard <- function(path = NULL) {
   empty <- data.frame(
     Patient = character(),
     Board_Datum = as.Date(character()),

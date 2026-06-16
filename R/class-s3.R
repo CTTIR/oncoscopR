@@ -8,7 +8,7 @@
 
 #' Cohort data frame
 #'
-#' A thin S3 wrapper around a data frame returned by [onc_read_cohort()].
+#' A thin S3 wrapper around a data frame returned by [zhn_read_cohort()].
 #' Inherits from `data.frame` so all base subscripting and dplyr verbs work;
 #' the class is preserved across `[`-subsetting but stripped by most dplyr
 #' verbs (use [tibble::as_tibble()] to opt out cleanly).
@@ -35,7 +35,7 @@ new_cohort_df <- function(x = data.frame(), sheet_to_use = NA_character_) {
 
 #' @export
 print.cohort_df <- function(x, ..., n = 5L) {
-  cli::cli_h2("oncoscopR cohort")
+  cli::cli_h2("zhncommandR cohort")
   sheet <- attr(x, "sheet_to_use") %||% NA_character_
   cli::cli_bullets(c(
     "*" = "Rows: {.val {nrow(x)}}",
@@ -70,7 +70,7 @@ summary.cohort_df <- function(object, ...) {
 
 #' Therapy-blocks data frame
 #'
-#' S3 wrapper for the output of [onc_prepare_therapy_blocks()].
+#' S3 wrapper for the output of [zhn_prepare_therapy_blocks()].
 #'
 #' @inheritParams new_cohort_df
 #' @param patient_cols_used Character; pipe-joined list of raw patient
@@ -121,7 +121,7 @@ summary.therapy_blocks <- function(object, ...) {
 
 #' Diagnostic-blocks data frame
 #'
-#' S3 wrapper for the output of [onc_prepare_diagnostic_blocks()].
+#' S3 wrapper for the output of [zhn_prepare_diagnostic_blocks()].
 #'
 #' @inheritParams new_cohort_df
 #' @param component_cols Character; comma-joined list of detected component

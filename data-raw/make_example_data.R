@@ -1,6 +1,6 @@
-# Generate the bundled synthetic example workbook for oncoscopR.
+# Generate the bundled synthetic example workbook for zhncommandR.
 #
-# Source-of-truth script for inst/extdata/onc_example.xlsx. Re-run after any
+# Source-of-truth script for inst/extdata/zhn_example.xlsx. Re-run after any
 # change to the cleaned-column contract the dashboard depends on.
 #
 # 100% synthetic — no real patient data. Names are "Muster, Fall NNN".
@@ -157,7 +157,7 @@ komplexe_diagnostik <- data.frame(
   stringsAsFactors = FALSE
 )
 
-out_path <- file.path("inst", "extdata", "onc_example.xlsx")
+out_path <- file.path("inst", "extdata", "zhn_example.xlsx")
 dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
 openxlsx::write.xlsx(
   list(

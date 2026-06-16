@@ -1,15 +1,15 @@
-# oncoscopR 0.1.0 (development)
+# zhncommandR 0.1.0 (development)
 
 * Initial CRAN-targeted release.
 * Package extracts the ZHN Auditor Shiny app (v5) backend logic into
-  reusable, namespaced functions: readers (`onc_read_cohort()`,
-  `onc_read_therapy()`, `onc_read_diagnostics()`, `onc_read_tumorboard()`),
-  parsers (`onc_prepare_therapy_blocks()`, `onc_prepare_diagnostic_blocks()`,
-  `onc_parse_oncoprint()`, `onc_parse_cytogenetics()`), and alteration
-  classification helpers (`onc_normalize_alteration()`,
-  `onc_alteration_type()`, `onc_is_mutation()`).
-* Dashboard launcher `onc_run_app()` plus bundled synthetic example data
-  reachable through `onc_example_path()`.
+  reusable, namespaced functions: readers (`zhn_read_cohort()`,
+  `zhn_read_therapy()`, `zhn_read_diagnostics()`, `zhn_read_tumorboard()`),
+  parsers (`zhn_prepare_therapy_blocks()`, `zhn_prepare_diagnostic_blocks()`,
+  `zhn_parse_oncoprint()`, `zhn_parse_cytogenetics()`), and alteration
+  classification helpers (`zhn_normalize_alteration()`,
+  `zhn_alteration_type()`, `zhn_is_mutation()`).
+* Dashboard launcher `zhn_run_app()` plus bundled synthetic example data
+  reachable through `zhn_example_path()`.
 * Fixed `as_event01("10 months")` no longer classifies as an event
   (legacy `grepl("^1", ...)` regression).
 * Sheet-detection consolidated into a single resolver with explicit overrides

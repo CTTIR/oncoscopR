@@ -16,7 +16,7 @@ new_cohort_df(x = data.frame(), sheet_to_use = NA_character_)
 A \code{cohort_df} (S3 class), inheriting from \code{data.frame}.
 }
 \description{
-A thin S3 wrapper around a data frame returned by \code{\link[=onc_read_cohort]{onc_read_cohort()}}.
+A thin S3 wrapper around a data frame returned by \code{\link[=zhn_read_cohort]{zhn_read_cohort()}}.
 Inherits from \code{data.frame} so all base subscripting and dplyr verbs work;
 the class is preserved across \code{[}-subsetting but stripped by most dplyr
 verbs (use \code{\link[tibble:as_tibble]{tibble::as_tibble()}} to opt out cleanly).

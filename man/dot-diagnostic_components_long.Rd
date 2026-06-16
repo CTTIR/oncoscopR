@@ -7,7 +7,7 @@
 .diagnostic_components_long(blocks)
 }
 \arguments{
-\item{blocks}{Tibble from \code{\link[=onc_prepare_diagnostic_blocks]{onc_prepare_diagnostic_blocks()}}.}
+\item{blocks}{Tibble from \code{\link[=zhn_prepare_diagnostic_blocks]{zhn_prepare_diagnostic_blocks()}}.}
 }
 \value{
 Long tibble with \code{patient}, \code{diagnose}, \code{jahr}, \code{monat_sort},

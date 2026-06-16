@@ -2,12 +2,12 @@
 #
 # Replace YOUR_DOMAIN with the production hostname. Caddy serves HTTPS on
 # 443 by default and forwards plain HTTP requests to the Shiny upstream
-# listening on the internal Docker network at oncoscopr:3838.
+# listening on the internal Docker network at zhncommandr:3838.
 #
 # Run alongside the image with docker-compose:
 #
 #   services:
-#     oncoscopr:
+#     zhncommandr:
 #       build: .
 #       expose: ["3838"]
 #     caddy:
@@ -17,14 +17,14 @@
 #         - ./Caddyfile:/etc/caddy/Caddyfile
 #         - caddy_data:/data
 #         - caddy_config:/config
-#       depends_on: [oncoscopr]
+#       depends_on: [zhncommandr]
 #   volumes:
 #     caddy_data: {}
 #     caddy_config: {}
 
 YOUR_DOMAIN {
     encode zstd gzip
-    reverse_proxy oncoscopr:3838 {
+    reverse_proxy zhncommandr:3838 {
         flush_interval -1
     }
 }

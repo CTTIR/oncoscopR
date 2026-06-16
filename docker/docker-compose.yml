@@ -1,5 +1,5 @@
 services:
-  oncoscopr:
+  zhncommandr:
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -18,7 +18,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - oncoscopr
+      - zhncommandr
 
 volumes:
   caddy_data: {}

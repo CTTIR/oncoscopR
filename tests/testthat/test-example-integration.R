@@ -54,34 +54,34 @@
   tmp
 }
 
-test_that("onc_example_path returns a real file", {
-  p <- onc_example_path()
+test_that("zhn_example_path returns a real file", {
+  p <- zhn_example_path()
   expect_true(file.exists(p))
-  expect_match(p, "onc_example\\.xlsx$")
+  expect_match(p, "zhn_example\\.xlsx$")
 })
 
 test_that("integration: tiny fixture roundtrips through every reader", {
   tmp <- .make_tiny_workbook()
-  cohort <- onc_read_cohort(tmp, verbose = FALSE)
+  cohort <- zhn_read_cohort(tmp, verbose = FALSE)
   expect_s3_class(cohort, "cohort_df")
   expect_identical(nrow(cohort), 5L)
   expect_true("behandlungsjahr" %in% names(cohort))
 
-  therapy <- onc_read_therapy(tmp, verbose = FALSE)
-  blocks <- onc_prepare_therapy_blocks(therapy)
+  therapy <- zhn_read_therapy(tmp, verbose = FALSE)
+  blocks <- zhn_prepare_therapy_blocks(therapy)
   expect_s3_class(blocks, "therapy_blocks")
   expect_identical(nrow(blocks), 3L)
 
-  diag <- onc_read_diagnostics(tmp, verbose = FALSE)
-  d_blocks <- onc_prepare_diagnostic_blocks(diag)
+  diag <- zhn_read_diagnostics(tmp, verbose = FALSE)
+  d_blocks <- zhn_prepare_diagnostic_blocks(diag)
   expect_s3_class(d_blocks, "diagnostic_blocks")
   expect_identical(nrow(d_blocks), 3L)
 
-  onco <- onc_parse_oncoprint(cohort)
+  onco <- zhn_parse_oncoprint(cohort)
   expect_gt(nrow(onco), 0L)
   expect_true(all(c("alteration", "alteration_class") %in% names(onco)))
 
-  cyto <- onc_parse_cytogenetics(cohort)
+  cyto <- zhn_parse_cytogenetics(cohort)
   expect_gt(nrow(cyto), 0L)
   expect_true("Strukturell/Zytogenetik: Komplexer Karyotyp" %in%
                 cyto$alteration_class)
@@ -94,6 +94,6 @@ test_that("integration: tiny fixture roundtrips through every reader", {
 # Bundled-example smoke test stays but is now redundant with the fixture above;
 # kept as a regression on the actual shipped file.
 test_that("bundled example workbook still loads", {
-  cohort <- onc_read_cohort(onc_example_path(), verbose = FALSE)
+  cohort <- zhn_read_cohort(zhn_example_path(), verbose = FALSE)
   expect_gt(nrow(cohort), 0L)
 })

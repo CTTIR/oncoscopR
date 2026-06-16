@@ -15,7 +15,7 @@
 )
 }
 \arguments{
-\item{df}{Cohort data frame from \code{\link[=onc_read_cohort]{onc_read_cohort()}}.}
+\item{df}{Cohort data frame from \code{\link[=zhn_read_cohort]{zhn_read_cohort()}}.}
 
 \item{source_col}{Character; name of the source free-text column.}
 
@@ -36,6 +36,6 @@ pipeline).}
 \description{
 Splits a free-text column on commas/newlines, classifies each entry,
 applies the negative filter, and deduplicates. Used by both
-\code{\link[=onc_parse_oncoprint]{onc_parse_oncoprint()}} and \code{\link[=onc_parse_cytogenetics]{onc_parse_cytogenetics()}}.
+\code{\link[=zhn_parse_oncoprint]{zhn_parse_oncoprint()}} and \code{\link[=zhn_parse_cytogenetics]{zhn_parse_cytogenetics()}}.
 }
 \keyword{internal}

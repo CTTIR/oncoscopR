@@ -14,7 +14,7 @@ columns (Morphologie / Immunphaenotypisierung / Zytogenetik /
 Molekulargenetik). Carried as an attribute.}
 }
 \description{
-S3 wrapper for the output of \code{\link[=onc_prepare_diagnostic_blocks]{onc_prepare_diagnostic_blocks()}}.
+S3 wrapper for the output of \code{\link[=zhn_prepare_diagnostic_blocks]{zhn_prepare_diagnostic_blocks()}}.
 }
 \seealso{
 Other classes:

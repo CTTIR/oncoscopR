@@ -2,9 +2,9 @@
 #'
 #' Splits a free-text column on commas/newlines, classifies each entry,
 #' applies the negative filter, and deduplicates. Used by both
-#' [onc_parse_oncoprint()] and [onc_parse_cytogenetics()].
+#' [zhn_parse_oncoprint()] and [zhn_parse_cytogenetics()].
 #'
-#' @inheritParams onc_parse_oncoprint
+#' @inheritParams zhn_parse_oncoprint
 #' @param source_col Character; name of the source free-text column.
 #' @param diag_col Character; name of the diagnosis column.
 #' @param patient_col Character or `NULL`; name of the patient column.
@@ -43,10 +43,10 @@
   tmp$raw_full <- stringr::str_replace_all(tmp$raw_full, "\\n|\\r|/", ",")
   tmp <- tidyr::separate_rows(tmp, "raw_full", sep = ",")
   tmp$raw_full <- trimws(tmp$raw_full)
-  tmp$alteration <- onc_normalize_alteration(tmp$raw_full)
-  tmp$alteration_class <- onc_alteration_type(tmp$raw_full)
+  tmp$alteration <- zhn_normalize_alteration(tmp$raw_full)
+  tmp$alteration_class <- zhn_alteration_type(tmp$raw_full)
   if (!is.null(distinct_extra)) {
-    tmp$oncoprint_mutation <- onc_is_mutation(tmp$alteration_class)
+    tmp$oncoprint_mutation <- zhn_is_mutation(tmp$alteration_class)
   }
   names(tmp)[names(tmp) == "raw_full"] <- value_label
 

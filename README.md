@@ -1,20 +1,20 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file. -->
 
-# oncoscopR <a href="https://cttir.github.io/oncoscopR/"><img src="man/figures/logo.png" align="right" height="139" alt="oncoscopR hex logo" /></a>
+# zhncommandR <a href="https://cttir.github.io/zhncommandR/"><img src="man/figures/logo.png" align="right" height="139" alt="zhncommandR hex logo" /></a>
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/CTTIR/oncoscopR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CTTIR/oncoscopR/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/CTTIR/zhncommandR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CTTIR/zhncommandR/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/CTTIR/oncoscopR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/CTTIR/oncoscopR)
+coverage](https://codecov.io/gh/CTTIR/zhncommandR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/CTTIR/zhncommandR)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License:
 MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
-`oncoscopR` is an **auditor live-evaluation dashboard** for
+`zhncommandR` is an **auditor live-evaluation dashboard** for
 haematological tumour centres. It reads the tumour-documentation Excel
 sheets that auditors work with day to day, and turns them into a single
 interactive view of cohort quality, OPS-coded complex chemotherapy and
@@ -45,7 +45,7 @@ the **CTTIR** suite and shares the
 - **Tumour-board decisions.** Capture, review, download / re-upload —
   all in-session, never written to disk by the app.
 
-A **fully synthetic example cohort** (`inst/extdata/onc_example.xlsx`)
+A **fully synthetic example cohort** (`inst/extdata/zhn_example.xlsx`)
 is bundled, so you can explore everything without any real patient data.
 Real data is never committed.
 
@@ -53,24 +53,24 @@ Real data is never committed.
 
 ``` r
 # install.packages("pak")
-pak::pak("CTTIR/oncoscopR")
+pak::pak("CTTIR/zhncommandR")
 ```
 
 ## Quick start
 
 ``` r
-library(oncoscopR)
+library(zhncommandR)
 
 # Programmatic — readers + parsers
-path   <- onc_example_path()
-cohort <- onc_read_cohort(path)
+path   <- zhn_example_path()
+cohort <- zhn_read_cohort(path)
 nrow(cohort)
 
-onco <- onc_parse_oncoprint(cohort)
+onco <- zhn_parse_oncoprint(cohort)
 head(onco[, c("patient_label", "diagnose_label", "alteration")])
 
 # Interactive dashboard
-onc_run_app()
+zhn_run_app()
 ```
 
 In the running app, click **Beispieldaten laden** to load the bundled
@@ -86,22 +86,23 @@ accepts the canonical sheets `Basisdaten`, `Komplexe Chemotherapie`, and
 | `new_cohort_df()` | S3 constructor for the cohort wrapper |
 | `new_diagnostic_blocks()` | S3 constructor for the diagnostic-block wrapper |
 | `new_therapy_blocks()` | S3 constructor for the therapy-block wrapper |
-| `onc_alteration_type()` | Classify a free-text alteration string |
-| `onc_example_path()` | Path to the bundled synthetic workbook |
-| `onc_is_mutation()` | Predicate: belongs in the oncoprint? |
-| `onc_normalize_alteration()` | Strip Mutation/Mut suffix, collapse whitespace |
-| `onc_parse_cytogenetics()` | Split + classify the cytogenetics column |
-| `onc_parse_oncoprint()` | Split + classify the mutation free-text column |
-| `onc_prepare_diagnostic_blocks()` | Per-case S3 object for OPS-1-941 |
-| `onc_prepare_therapy_blocks()` | Per-block S3 object for OPS-8-544 |
-| `onc_read_cohort()` | Read the Basisdaten sheet |
-| `onc_read_diagnostics()` | Read the OPS-1-941 complex-diagnostics sheet |
-| `onc_read_therapy()` | Read the OPS-8-544 complex-chemotherapy sheet |
-| `onc_read_tumorboard()` | Load a previously exported tumour-board CSV |
-| `onc_run_app()` | Launch the Shiny dashboard |
+| `zhn_alteration_type()` | Classify a free-text alteration string |
+| `zhn_example_path()` | Path to the bundled synthetic workbook |
+| `zhn_is_mutation()` | Predicate: belongs in the oncoprint? |
+| `zhn_normalize_alteration()` | Strip Mutation/Mut suffix, collapse whitespace |
+| `zhn_parse_cytogenetics()` | Split + classify the cytogenetics column |
+| `zhn_parse_oncoprint()` | Split + classify the mutation free-text column |
+| `zhn_prepare_diagnostic_blocks()` | Per-case S3 object for OPS-1-941 |
+| `zhn_prepare_therapy_blocks()` | Per-block S3 object for OPS-8-544 |
+| `zhn_read_cohort()` | Read the Basisdaten sheet |
+| `zhn_read_diagnostics()` | Read the OPS-1-941 complex-diagnostics sheet |
+| `zhn_read_therapy()` | Read the OPS-8-544 complex-chemotherapy sheet |
+| `zhn_read_tumorboard()` | Load a previously exported tumour-board CSV |
+| `zhn_run_app()` | Launch the Shiny dashboard |
 
-See the [reference index](https://cttir.github.io/oncoscopR/reference/)
-for parameter and return-type contracts.
+See the [reference
+index](https://cttir.github.io/zhncommandR/reference/) for parameter and
+return-type contracts.
 
 ## Authors
 

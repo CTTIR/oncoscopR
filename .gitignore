@@ -8,10 +8,10 @@
 .Renviron
 
 # Build artefacts ------------------------------------------------------------
-oncoscopR.Rcheck/
-oncoscopR_*.tar.gz
-oncoscopR_*.tgz
-oncoscopR_*.zip
+zhncommandR.Rcheck/
+zhncommandR_*.tar.gz
+zhncommandR_*.tgz
+zhncommandR_*.zip
 src/*.o
 src/*.so
 src/*.dll

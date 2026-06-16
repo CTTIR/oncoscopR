@@ -1,8 +1,8 @@
 ---
-title: "Getting started with oncoscopR"
+title: "Getting started with zhncommandR"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting started with oncoscopR}
+  %\VignetteIndexEntry{Getting started with zhncommandR}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -13,16 +13,16 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.width = 7, fig.height = 4.5
 )
-library(oncoscopR)
+library(zhncommandR)
 ```
 
-<img src="../man/figures/logo.png" align="right" height="120" alt="oncoscopR logo" />
+<img src="../man/figures/logo.png" align="right" height="120" alt="zhncommandR logo" />
 
 
-`oncoscopR` packages the **ZHN Auditor** dashboard — a Shiny app for live
+`zhncommandR` packages the **ZHN Auditor** dashboard — a Shiny app for live
 evaluation of haematological tumour-centre cohorts — together with the
 backend helpers that drive it. The dashboard is launched with
-`onc_run_app()`. The rest of this vignette shows the same analyses run
+`zhn_run_app()`. The rest of this vignette shows the same analyses run
 programmatically against the bundled synthetic example.
 
 ## Example data
@@ -31,14 +31,14 @@ The package ships a 100 % synthetic example workbook with three sheets:
 `Basisdaten`, `Komplexe Chemotherapie`, `Komplexe Diagnostik`.
 
 ```{r}
-path <- onc_example_path()
+path <- zhn_example_path()
 basename(path)
 ```
 
 ## Reading the cohort
 
 ```{r}
-cohort <- onc_read_cohort(path, verbose = FALSE)
+cohort <- zhn_read_cohort(path, verbose = FALSE)
 str(cohort[, intersect(
   c("name", "diagnose", "behandlungsjahr", "primaerfall",
     "psychoonkologie", "pfs", "os"),
@@ -46,7 +46,7 @@ str(cohort[, intersect(
 )], list.len = 7)
 ```
 
-`onc_read_cohort()` calls `janitor::clean_names()`, drops empty `none*`
+`zhn_read_cohort()` calls `janitor::clean_names()`, drops empty `none*`
 columns, and derives `behandlungsjahr` from the first matching date column.
 
 ## Quality indicators
@@ -61,7 +61,7 @@ indicators <- intersect(indicators, names(cohort))
 
 do.call(rbind, lapply(indicators, function(v) {
   val <- cohort[[v]]
-  yes <- sum(oncoscopR:::.as_yesno(val) %in% TRUE, na.rm = TRUE)
+  yes <- sum(zhncommandR:::.as_yesno(val) %in% TRUE, na.rm = TRUE)
   data.frame(
     Indikator = v, Positiv = yes, Gesamt = nrow(cohort),
     Anteil = round(yes / nrow(cohort), 2)
@@ -72,8 +72,8 @@ do.call(rbind, lapply(indicators, function(v) {
 ## OPS-8-544 therapy blocks
 
 ```{r}
-therapy_raw <- onc_read_therapy(path, verbose = FALSE)
-blocks <- onc_prepare_therapy_blocks(therapy_raw)
+therapy_raw <- zhn_read_therapy(path, verbose = FALSE)
+blocks <- zhn_prepare_therapy_blocks(therapy_raw)
 head(blocks[, c("patient", "therapieprotokoll", "diagnose", "datum")])
 nrow(blocks)
 ```
@@ -90,7 +90,7 @@ event_col <- if ("rezidiv_event" %in% names(cohort)) {
 }
 km <- data.frame(
   time = suppressWarnings(as.numeric(cohort$pfs)),
-  event = oncoscopR:::.as_event01(event_col, mode = "auto")
+  event = zhncommandR:::.as_event01(event_col, mode = "auto")
 )
 km <- km[!is.na(km$time) & !is.na(km$event), ]
 fit <- survival::survfit(survival::Surv(time, event) ~ 1, data = km)
@@ -101,7 +101,7 @@ plot(fit, xlab = "Monate", ylab = "PFS",
 ## Oncoprint table
 
 ```{r}
-onco <- onc_parse_oncoprint(cohort)
+onco <- zhn_parse_oncoprint(cohort)
 head(onco[, c("patient_label", "diagnose_label", "alteration",
               "alteration_class")])
 ```
@@ -109,5 +109,5 @@ head(onco[, c("patient_label", "diagnose_label", "alteration",
 ## Launching the dashboard
 
 ```r
-onc_run_app()
+zhn_run_app()
 ```

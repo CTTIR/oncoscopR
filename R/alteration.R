@@ -10,8 +10,8 @@
 #' @family alteration
 #' @export
 #' @examples
-#' onc_normalize_alteration(c("TP53 Mutation", "  NRAS  Mut", "del(17p)"))
-onc_normalize_alteration <- function(x) {
+#' zhn_normalize_alteration(c("TP53 Mutation", "  NRAS  Mut", "del(17p)"))
+zhn_normalize_alteration <- function(x) {
   x <- trimws(as.character(x))
   x <- stringr::str_replace_all(x, "\\s+", " ")
   x <- stringr::str_replace_all(
@@ -43,11 +43,11 @@ onc_normalize_alteration <- function(x) {
 #' @family alteration
 #' @export
 #' @examples
-#' onc_alteration_type(c(
+#' zhn_alteration_type(c(
 #'   "TP53 Mutation", "del(17p)", "Trisomie 12",
 #'   "t(11;14)", "komplexer Karyotyp", "negativ", NA
 #' ))
-onc_alteration_type <- function(x) {
+zhn_alteration_type <- function(x) {
   xl <- tolower(as.character(x))
   out <- rep(NA_character_, length(xl))
 
@@ -85,14 +85,14 @@ onc_alteration_type <- function(x) {
 #' tabular and cytogenetics-tab views.
 #'
 #' @param alteration_class Character vector as returned by
-#'   [onc_alteration_type()].
+#'   [zhn_alteration_type()].
 #'
 #' @return Logical vector the same length as `alteration_class`.
 #'
 #' @family alteration
 #' @export
 #' @examples
-#' onc_is_mutation(onc_alteration_type(c("TP53", "del(17p)")))
-onc_is_mutation <- function(alteration_class) {
+#' zhn_is_mutation(zhn_alteration_type(c("TP53", "del(17p)")))
+zhn_is_mutation <- function(alteration_class) {
   alteration_class == "Mutation/Variante"
 }

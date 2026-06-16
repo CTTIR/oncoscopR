@@ -13,7 +13,7 @@ new_therapy_blocks(x = data.frame(), patient_cols_used = "")
 columns coalesced into \code{patient} (carried as an attribute).}
 }
 \description{
-S3 wrapper for the output of \code{\link[=onc_prepare_therapy_blocks]{onc_prepare_therapy_blocks()}}.
+S3 wrapper for the output of \code{\link[=zhn_prepare_therapy_blocks]{zhn_prepare_therapy_blocks()}}.
 }
 \seealso{
 Other classes:

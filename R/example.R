@@ -7,19 +7,19 @@
 #' Used as the data source when the dashboard's "Beispieldaten laden"
 #' button is clicked, and in the documentation examples.
 #'
-#' @return Length-1 character. The path to `onc_example.xlsx`.
+#' @return Length-1 character. The path to `zhn_example.xlsx`.
 #'
 #' @family data
 #' @export
 #' @examples
-#' onc_example_path()
-#' if (interactive()) onc_read_cohort(onc_example_path())
-onc_example_path <- function() {
-  p <- system.file("extdata", "onc_example.xlsx", package = "oncoscopR")
+#' zhn_example_path()
+#' if (interactive()) zhn_read_cohort(zhn_example_path())
+zhn_example_path <- function() {
+  p <- system.file("extdata", "zhn_example.xlsx", package = "zhncommandR")
   if (!nzchar(p)) {
     cli::cli_abort(c(
       "Bundled example workbook not found.",
-      "i" = "Reinstall {.pkg oncoscopR} or run {.code source('data-raw/make_example_data.R')}."
+      "i" = "Reinstall {.pkg zhncommandR} or run {.code source('data-raw/make_example_data.R')}."
     ))
   }
   p

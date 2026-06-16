@@ -67,17 +67,17 @@ test_that("new_diagnostic_blocks carries component_cols attribute", {
 
 test_that("parsers return their S3 class on the example data", {
   skip_if_not_installed("openxlsx")
-  raw <- onc_read_therapy(onc_example_path(), verbose = FALSE)
-  blocks <- onc_prepare_therapy_blocks(raw)
+  raw <- zhn_read_therapy(zhn_example_path(), verbose = FALSE)
+  blocks <- zhn_prepare_therapy_blocks(raw)
   expect_s3_class(blocks, "therapy_blocks")
 
-  raw_d <- onc_read_diagnostics(onc_example_path(), verbose = FALSE)
-  d_blocks <- onc_prepare_diagnostic_blocks(raw_d)
+  raw_d <- zhn_read_diagnostics(zhn_example_path(), verbose = FALSE)
+  d_blocks <- zhn_prepare_diagnostic_blocks(raw_d)
   expect_s3_class(d_blocks, "diagnostic_blocks")
 })
 
-test_that("onc_read_cohort returns a cohort_df", {
-  out <- onc_read_cohort(onc_example_path(), verbose = FALSE)
+test_that("zhn_read_cohort returns a cohort_df", {
+  out <- zhn_read_cohort(zhn_example_path(), verbose = FALSE)
   expect_s3_class(out, "cohort_df")
   expect_true(nzchar(attr(out, "sheet_to_use")))
 })
@@ -98,8 +98,8 @@ test_that("OPS-1-941 component regex excludes psychoonkologische_diagnostik", {
     ),
     file = tmp
   )
-  raw <- onc_read_diagnostics(tmp, verbose = FALSE)
-  blocks <- onc_prepare_diagnostic_blocks(raw)
+  raw <- zhn_read_diagnostics(tmp, verbose = FALSE)
+  blocks <- zhn_prepare_diagnostic_blocks(raw)
   comp <- attr(blocks, "component_cols")
   expect_true(grepl("morphologie", comp))
   expect_false(grepl("psychoonkologische", comp))

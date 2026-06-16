@@ -1,5 +1,5 @@
 # =============================================================
-# oncoscopR Shiny app
+# zhncommandR Shiny app
 # Audit / live evaluation dashboard for haematological tumour centres
 # =============================================================
 #
@@ -11,11 +11,11 @@
 #
 # Visual identity: Hugo Coder palette via _brand.yml + bs_theme + thematic.
 #
-# All backend logic is in oncoscopR:: -- see ?onc_run_app and ?onc_example_path.
+# All backend logic is in zhncommandR:: -- see ?zhn_run_app and ?zhn_example_path.
 
 # ---- Theme: Hugo Coder design tokens via brand.yml --------------------------
 .coder_theme <- function() {
-  app_dir <- system.file("shiny", "oncoscopR", package = "oncoscopR")
+  app_dir <- system.file("shiny", "zhncommandR", package = "zhncommandR")
   scss <- file.path(app_dir, "www", "custom.scss")
   theme <- bslib::bs_theme(
     version = 5,
@@ -55,7 +55,7 @@ if (requireNamespace("thematic", quietly = TRUE)) {
 ggplot2::theme_set(ggplot2::theme_minimal(base_size = 13))
 
 # ---- i18n (DE default, EN toggle) ------------------------------------------
-.app_dir <- system.file("shiny", "oncoscopR", package = "oncoscopR")
+.app_dir <- system.file("shiny", "zhncommandR", package = "zhncommandR")
 if (!nzchar(.app_dir)) .app_dir <- getwd()
 .i18n_path <- file.path(.app_dir, "translations", "translation.json")
 i18n <- shiny.i18n::Translator$new(translation_json_path = .i18n_path)
@@ -75,7 +75,7 @@ ui <- shiny::fluidPage(
         class = "d-flex align-items-center gap-2 mb-2",
         shiny::tags$img(
           src = "logo.svg",
-          alt = "oncoscopR logo",
+          alt = "zhncommandR logo",
           height = "32",
           style = "display:inline-block;"
         ),
@@ -453,7 +453,7 @@ server <- function(input, output, session) {
   })
 
   shiny::observeEvent(input$load_example, {
-    p <- oncoscopR::onc_example_path()
+    p <- zhncommandR::zhn_example_path()
     current_path(p)
     current_label(.tr("Beispieldaten geladen (synthetisch)."))
   })
@@ -470,7 +470,7 @@ server <- function(input, output, session) {
     {
       p <- current_path()
       if (is.null(p)) return(data.frame())
-      oncoscopR::onc_read_cohort(p, verbose = FALSE)
+      zhncommandR::zhn_read_cohort(p, verbose = FALSE)
     },
     ignoreNULL = FALSE
   )
@@ -484,7 +484,7 @@ server <- function(input, output, session) {
         attr(out, "source_label") <- .tr("Keine Datenquelle geladen")
         return(out)
       }
-      oncoscopR::onc_read_therapy(p, verbose = FALSE)
+      zhncommandR::zhn_read_therapy(p, verbose = FALSE)
     },
     ignoreNULL = FALSE
   )
@@ -498,7 +498,7 @@ server <- function(input, output, session) {
         attr(out, "source_label") <- .tr("Keine Datenquelle geladen")
         return(out)
       }
-      oncoscopR::onc_read_diagnostics(p, verbose = FALSE)
+      zhncommandR::zhn_read_diagnostics(p, verbose = FALSE)
     },
     ignoreNULL = FALSE
   )
@@ -506,10 +506,10 @@ server <- function(input, output, session) {
   # ------------------------------------------------------------------
   # Helper aliases — keep server bodies short
   # ------------------------------------------------------------------
-  find_col   <- oncoscopR:::.find_col
-  as_yesno   <- oncoscopR:::.as_yesno
-  as_event01 <- oncoscopR:::.as_event01
-  n_distinct_nonempty <- oncoscopR:::.n_distinct_nonempty
+  find_col   <- zhncommandR:::.find_col
+  as_yesno   <- zhncommandR:::.as_yesno
+  as_event01 <- zhncommandR:::.as_event01
+  n_distinct_nonempty <- zhncommandR:::.n_distinct_nonempty
 
   output$global_filters <- shiny::renderUI({
     df <- data_raw()
@@ -887,12 +887,12 @@ server <- function(input, output, session) {
   # ------------------------------------------------------------------
   # Tumorboard — in-session reactiveVal, optional upload, no disk writes
   # ------------------------------------------------------------------
-  tumorboard_data <- shiny::reactiveVal(oncoscopR::onc_read_tumorboard(NULL))
+  tumorboard_data <- shiny::reactiveVal(zhncommandR::zhn_read_tumorboard(NULL))
 
   shiny::observeEvent(input$tumorboard_file, {
     f <- input$tumorboard_file
     if (is.null(f) || !nzchar(f$datapath)) return()
-    tumorboard_data(oncoscopR::onc_read_tumorboard(f$datapath))
+    tumorboard_data(zhncommandR::zhn_read_tumorboard(f$datapath))
     shiny::showNotification(paste0(.tr("Tumorboardbeschlüsse geladen: "), f$name),
                             type = "message")
   })
@@ -1120,7 +1120,7 @@ server <- function(input, output, session) {
   # OPS-8-544
   # ------------------------------------------------------------------
   therapy_block_data <- shiny::reactive({
-    oncoscopR::onc_prepare_therapy_blocks(therapy_raw())
+    zhncommandR::zhn_prepare_therapy_blocks(therapy_raw())
   })
 
   output$therapy_source_info <- shiny::renderText({
@@ -1255,7 +1255,7 @@ server <- function(input, output, session) {
   # OPS-1-941
   # ------------------------------------------------------------------
   diagnostic_block_data <- shiny::reactive({
-    oncoscopR::onc_prepare_diagnostic_blocks(diagnostic_raw())
+    zhncommandR::zhn_prepare_diagnostic_blocks(diagnostic_raw())
   })
 
   output$diagnostic_source_info <- shiny::renderText({
@@ -1280,7 +1280,7 @@ server <- function(input, output, session) {
                             choices = sort(unique(stats::na.omit(blocks$diagnose))),
                             selected = NULL, multiple = TRUE),
       shiny::selectizeInput("diagnostic_component_filter", .tr("Diagnostikbereich"),
-                            choices = sort(unique(oncoscopR:::.diagnostic_components_long(blocks)$diagnostik_bereich)),
+                            choices = sort(unique(zhncommandR:::.diagnostic_components_long(blocks)$diagnostik_bereich)),
                             selected = NULL, multiple = TRUE),
       shiny::textInput("diagnostic_search", .tr("Freitextsuche Patient/Diagnose"), value = "")
     )
@@ -1296,7 +1296,7 @@ server <- function(input, output, session) {
       blocks <- dplyr::filter(blocks, .data$diagnose %in% input$diagnostic_diagnosis_filter)
     }
     if (!is.null(input$diagnostic_component_filter) && length(input$diagnostic_component_filter) > 0) {
-      long <- oncoscopR:::.diagnostic_components_long(blocks)
+      long <- zhncommandR:::.diagnostic_components_long(blocks)
       long <- dplyr::filter(long, .data$diagnostik_bereich %in% input$diagnostic_component_filter)
       keep_pat <- unique(long$patient)
       blocks <- dplyr::filter(blocks, .data$patient %in% keep_pat)
@@ -1311,7 +1311,7 @@ server <- function(input, output, session) {
   })
 
   diagnostic_components_filtered <- shiny::reactive({
-    long <- oncoscopR:::.diagnostic_components_long(diagnostic_filtered())
+    long <- zhncommandR:::.diagnostic_components_long(diagnostic_filtered())
     if (!is.null(input$diagnostic_component_filter) &&
         length(input$diagnostic_component_filter) > 0 && nrow(long) > 0) {
       long <- dplyr::filter(long, .data$diagnostik_bereich %in% input$diagnostic_component_filter)
@@ -1404,7 +1404,7 @@ server <- function(input, output, session) {
   output$oncoprint_filters <- shiny::renderUI({
     df <- data_filtered(); shiny::req(nrow(df) > 0)
     onco_all <- tryCatch(
-      oncoscopR::onc_parse_oncoprint(df, remove_negative = FALSE),
+      zhncommandR::zhn_parse_oncoprint(df, remove_negative = FALSE),
       error = function(e) NULL
     )
     shiny::validate(shiny::need(!is.null(onco_all) && nrow(onco_all) > 0,
@@ -1430,8 +1430,8 @@ server <- function(input, output, session) {
   oncoprint_all_filtered <- shiny::reactive({
     df <- data_filtered()
     onco <- tryCatch(
-      oncoscopR::onc_parse_oncoprint(df, remove_negative = isTRUE(input$onco_remove_negative)),
-      error = function(e) oncoscopR:::.empty_alteration_table(include_oncoprint_flag = TRUE)
+      zhncommandR::zhn_parse_oncoprint(df, remove_negative = isTRUE(input$onco_remove_negative)),
+      error = function(e) zhncommandR:::.empty_alteration_table(include_oncoprint_flag = TRUE)
     )
     if (!is.null(input$onco_entity_filter) && length(input$onco_entity_filter) > 0) {
       onco <- dplyr::filter(onco, .data$diagnose_label %in% input$onco_entity_filter)
@@ -1571,7 +1571,7 @@ server <- function(input, output, session) {
   output$cyto_filters <- shiny::renderUI({
     df <- data_filtered(); shiny::req(nrow(df) > 0)
     cyto_all <- tryCatch(
-      oncoscopR::onc_parse_cytogenetics(df, remove_negative = FALSE),
+      zhncommandR::zhn_parse_cytogenetics(df, remove_negative = FALSE),
       error = function(e) NULL
     )
     shiny::validate(shiny::need(!is.null(cyto_all) && nrow(cyto_all) > 0,
@@ -1596,8 +1596,8 @@ server <- function(input, output, session) {
   cyto_all_filtered <- shiny::reactive({
     df <- data_filtered()
     cyto <- tryCatch(
-      oncoscopR::onc_parse_cytogenetics(df, remove_negative = isTRUE(input$cyto_remove_negative)),
-      error = function(e) oncoscopR:::.empty_alteration_table(include_oncoprint_flag = FALSE,
+      zhncommandR::zhn_parse_cytogenetics(df, remove_negative = isTRUE(input$cyto_remove_negative)),
+      error = function(e) zhncommandR:::.empty_alteration_table(include_oncoprint_flag = FALSE,
                                                               raw_name = "zytogenetik_raw")
     )
     if (!is.null(input$cyto_entity_filter) && length(input$cyto_entity_filter) > 0) {
@@ -1732,12 +1732,12 @@ server <- function(input, output, session) {
       )),
       shiny::p(.h(
         paste0(
-          "Diese App ist Teil des R-Pakets ", shiny::tags$code("oncoscopR"),
+          "Diese App ist Teil des R-Pakets ", shiny::tags$code("zhncommandR"),
           " (CTTIR-Suite). Alle Berechnungen sind reproduzierbar und ",
           "vollständig im Quellcode auf GitHub einsehbar."
         ),
         paste0(
-          "This app is part of the R package ", shiny::tags$code("oncoscopR"),
+          "This app is part of the R package ", shiny::tags$code("zhncommandR"),
           " (CTTIR suite). All calculations are reproducible and fully ",
           "auditable in the source on GitHub."
         )
@@ -1944,7 +1944,7 @@ server <- function(input, output, session) {
           "gesplittet (Semikolons innerhalb von Klammern, z.B. ",
           shiny::tags$code("t(11;14)"),
           ", bleiben intakt). Jeder Eintrag wird klassifiziert via ",
-          shiny::tags$code("onc_alteration_type()"),
+          shiny::tags$code("zhn_alteration_type()"),
           " in: „Mutation/Variante“, ",
           "„negativ/kein Nachweis“, ",
           "„Strukturell: Deletion/Loss“, ",
@@ -1960,7 +1960,7 @@ server <- function(input, output, session) {
           "(semicolons inside parentheses, e.g. ",
           shiny::tags$code("t(11;14)"),
           ", remain intact). Each entry is classified via ",
-          shiny::tags$code("onc_alteration_type()"),
+          shiny::tags$code("zhn_alteration_type()"),
           " into: \"Mutation/Variante\", \"negativ/kein Nachweis\", ",
           "\"Strukturell: Deletion/Loss\", \"Zugewinn/Amplifikation\", ",
           "\"Translokation/Rearrangement/Bruch\", \"Komplexer Karyotyp\", ",
@@ -1997,31 +1997,31 @@ server <- function(input, output, session) {
       shiny::h4(.h("Reproduzierbarkeit", "Reproducibility")),
       shiny::tags$ul(
         shiny::tags$li(.h(
-          paste0("R-Paket: ", shiny::tags$code("oncoscopR"),
+          paste0("R-Paket: ", shiny::tags$code("zhncommandR"),
                  " mit 0/0/0 in R CMD check --as-cran und Testabdeckung ",
                  "via covr."),
-          paste0("R package: ", shiny::tags$code("oncoscopR"),
+          paste0("R package: ", shiny::tags$code("zhncommandR"),
                  " — 0/0/0 in R CMD check --as-cran and covr coverage.")
         )),
         shiny::tags$li(.h(
           paste0("Beispiel-Datensatz: 100 % synthetisch, gebundled unter ",
-                 shiny::tags$code("inst/extdata/onc_example.xlsx"),
+                 shiny::tags$code("inst/extdata/zhn_example.xlsx"),
                  " (",
-                 shiny::tags$code("onc_example_path()"), ")."),
+                 shiny::tags$code("zhn_example_path()"), ")."),
           paste0("Example data: 100 % synthetic, bundled at ",
-                 shiny::tags$code("inst/extdata/onc_example.xlsx"),
+                 shiny::tags$code("inst/extdata/zhn_example.xlsx"),
                  " (",
-                 shiny::tags$code("onc_example_path()"), ").")
+                 shiny::tags$code("zhn_example_path()"), ").")
         )),
         shiny::tags$li(.h(
           paste0("Quelle und Issue-Tracker: ",
                  shiny::tags$a(
-                   href = "https://github.com/CTTIR/oncoscopR",
-                   "github.com/CTTIR/oncoscopR")),
+                   href = "https://github.com/CTTIR/zhncommandR",
+                   "github.com/CTTIR/zhncommandR")),
           paste0("Source and issue tracker: ",
                  shiny::tags$a(
-                   href = "https://github.com/CTTIR/oncoscopR",
-                   "github.com/CTTIR/oncoscopR"))
+                   href = "https://github.com/CTTIR/zhncommandR",
+                   "github.com/CTTIR/zhncommandR"))
         ))
       )
     )

@@ -1,7 +1,7 @@
 test_that(".check_file_exists aborts cleanly on missing file", {
-  expect_error(oncoscopR:::.check_file_exists(NULL), "No file path supplied")
-  expect_error(oncoscopR:::.check_file_exists(""), "No file path supplied")
-  expect_error(oncoscopR:::.check_file_exists("/no/such/file.xlsx"),
+  expect_error(zhncommandR:::.check_file_exists(NULL), "No file path supplied")
+  expect_error(zhncommandR:::.check_file_exists(""), "No file path supplied")
+  expect_error(zhncommandR:::.check_file_exists("/no/such/file.xlsx"),
                "File not found")
 })
 
@@ -13,7 +13,7 @@ test_that(".resolve_sheet errors clearly when no role match exists", {
     file = tmp
   )
   expect_error(
-    oncoscopR:::.resolve_sheet(tmp, "cohort"),
+    zhncommandR:::.resolve_sheet(tmp, "cohort"),
     "No sheet matching role"
   )
 })
@@ -29,7 +29,7 @@ test_that(".resolve_sheet picks the canonical name first", {
     file = tmp
   )
   expect_identical(
-    oncoscopR:::.resolve_sheet(tmp, "cohort"),
+    zhncommandR:::.resolve_sheet(tmp, "cohort"),
     "Basisdaten"
   )
 })
@@ -42,7 +42,7 @@ test_that(".resolve_sheet honours explicit sheet override", {
     file = tmp
   )
   expect_identical(
-    oncoscopR:::.resolve_sheet(tmp, "cohort", sheet = "Custom"),
+    zhncommandR:::.resolve_sheet(tmp, "cohort", sheet = "Custom"),
     "Custom"
   )
 })
@@ -55,7 +55,7 @@ test_that(".resolve_sheet falls back to regex for non-canonical names", {
     file = tmp
   )
   expect_identical(
-    oncoscopR:::.resolve_sheet(tmp, "cohort"),
+    zhncommandR:::.resolve_sheet(tmp, "cohort"),
     "MeineFaelle"
   )
 })
@@ -68,7 +68,7 @@ test_that(".clean_duplicate_columns drops empty `none*` cols", {
     other = c(1, 2),
     stringsAsFactors = FALSE
   )
-  out <- oncoscopR:::.clean_duplicate_columns(df, verbose = FALSE)
+  out <- zhncommandR:::.clean_duplicate_columns(df, verbose = FALSE)
   expect_identical(names(out), c("name", "other"))
 })
 
@@ -78,13 +78,13 @@ test_that(".clean_duplicate_columns warns about surviving _2 suffixed cols", {
     erstdiagnose_2 = as.Date(c("2024-02-01", "2024-07-15"))
   )
   expect_message(
-    oncoscopR:::.clean_duplicate_columns(df, verbose = TRUE),
+    zhncommandR:::.clean_duplicate_columns(df, verbose = TRUE),
     "De-duplicated"
   )
 })
 
-test_that("onc_read_tumorboard returns the contracted empty tibble", {
-  out <- onc_read_tumorboard(NULL)
+test_that("zhn_read_tumorboard returns the contracted empty tibble", {
+  out <- zhn_read_tumorboard(NULL)
   expect_s3_class(out, "data.frame")
   expect_identical(nrow(out), 0L)
   expect_identical(
@@ -95,14 +95,14 @@ test_that("onc_read_tumorboard returns the contracted empty tibble", {
   expect_s3_class(out$Board_Datum, "Date")
 })
 
-test_that("onc_read_therapy returns empty + source_label when no file", {
-  out <- onc_read_therapy(NULL)
+test_that("zhn_read_therapy returns empty + source_label when no file", {
+  out <- zhn_read_therapy(NULL)
   expect_identical(nrow(out), 0L)
   expect_match(attr(out, "source_label"), "Keine OPS-8-544")
 })
 
-test_that("onc_read_diagnostics returns empty + source_label when no file", {
-  out <- onc_read_diagnostics(NULL)
+test_that("zhn_read_diagnostics returns empty + source_label when no file", {
+  out <- zhn_read_diagnostics(NULL)
   expect_identical(nrow(out), 0L)
   expect_match(attr(out, "source_label"), "Keine OPS-1-941")
 })
