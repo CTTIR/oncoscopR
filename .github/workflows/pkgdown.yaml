@@ -1,3 +1,8 @@
+# Build and deploy the pkgdown site to GitHub Pages via GitHub Actions —
+# the modern standard (Pages "Source: GitHub Actions"). Each run publishes a
+# fresh artifact of the full build, so there is no gh-pages branch and no stale
+# files linger between deploys. `configure-pages` (enablement: true) switches
+# the Pages source to GitHub Actions automatically on the first successful run.
 on:
   push:
     branches: [main, master]
@@ -8,15 +13,21 @@ on:
 
 name: pkgdown
 
-permissions: read-all
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress Pages deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  pkgdown:
+  build:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -35,10 +46,26 @@ jobs:
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
-      - name: Deploy to GitHub pages 🚀
+      - name: Configure Pages
         if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        uses: actions/configure-pages@v5
         with:
-          clean: false
-          branch: gh-pages
-          folder: docs
+          enablement: true
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
