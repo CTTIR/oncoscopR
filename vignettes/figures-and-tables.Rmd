@@ -1,0 +1,121 @@
+---
+title: "Figures and tables"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    css: themakr-vignette.css
+vignette: >
+  %\VignetteIndexEntry{Figures and tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7, fig.height = 4.5, dpi = 96
+)
+library(zhncommandR)
+path <- zhn_example_path()
+```
+
+Every panel of the `zhncommandR` dashboard is a thin wrapper around an exported
+function, so the exact figures and tables you see in the app can be reproduced
+in a script or report. This vignette walks through them on the bundled,
+100 % synthetic example cohort.
+
+## The tables behind the panels
+
+The three readers turn the tumour-documentation sheets into tidy data frames
+(cleaned column names, derived treatment year):
+
+```{r}
+cohort <- zhn_read_cohort(path, verbose = FALSE)
+cohort |>
+  dplyr::count(diagnose, name = "Faelle", sort = TRUE) |>
+  dplyr::slice_head(n = 6) |>
+  knitr::kable(caption = "Cohort by entity (top 6)")
+```
+
+The S3 wrappers print and summarise themselves — a one-line cohort overview:
+
+```{r}
+summary(cohort)
+```
+
+### OPS-8-544 therapy blocks
+
+```{r}
+therapy <- zhn_read_therapy(path, verbose = FALSE)
+blocks  <- zhn_prepare_therapy_blocks(therapy)
+blocks |>
+  dplyr::count(therapieprotokoll, name = "Bloecke", sort = TRUE) |>
+  dplyr::slice_head(n = 6) |>
+  knitr::kable(caption = "Complex-chemotherapy blocks per protocol (top 6)")
+summary(blocks)
+```
+
+### OPS-1-941 complex diagnostics
+
+```{r}
+diag    <- zhn_read_diagnostics(path, verbose = FALSE)
+dblocks <- zhn_prepare_diagnostic_blocks(diag)
+summary(dblocks)
+```
+
+### Oncoprint and cytogenetics
+
+The alteration free-text is split and classified into a tidy long table; only
+true mutations/variants go to the oncoprint, structural/cytogenetic findings
+are tabulated separately.
+
+```{r}
+onco <- zhn_parse_oncoprint(cohort)
+onco |>
+  dplyr::count(alteration_class, name = "n", sort = TRUE) |>
+  knitr::kable(caption = "Oncoprint alterations by class")
+
+cyto <- zhn_parse_cytogenetics(cohort)
+cyto |>
+  dplyr::count(alteration_class, name = "n", sort = TRUE) |>
+  knitr::kable(caption = "Cytogenetic findings by class")
+```
+
+## The figures
+
+All figures share one theme (`zhn_theme()`) in the Hugo Coder look — a single
+blue data-ink accent (`zhn_pal$accent`), Inter type and a minimal panel — and
+each is a plain `ggplot` object you can extend.
+
+```{r diagnoses}
+zhn_plot_diagnoses(cohort, col = "diagnose")
+```
+
+```{r cases-by-year}
+zhn_plot_cases_by_year(cohort)
+```
+
+A publication-ready Kaplan-Meier curve (overall survival) with confidence
+interval, censoring marks and a numbers-at-risk table:
+
+```{r km, eval = requireNamespace("ggsurvfit", quietly = TRUE), message = FALSE, warning = FALSE, fig.height = 6}
+zhn_plot_km(cohort, time_col = "os", event_col = "death_event",
+            title = "Gesamtüberleben (synthetisch)")
+```
+
+See `vignette("zhncommandR")` for the full set of Kaplan-Meier options
+(grouping, log-rank p, Cox hazard ratio with proportional-hazards check,
+pairwise comparisons, cumulative-incidence scale).
+
+## Exporting paper-ready files
+
+`zhn_save_plot()` writes any of these figures at 600 dpi (PNG, via `ragg`) or as
+a vector PDF (via `cairo_pdf`, with the Inter font embedded). The transparency
+toggle from the app maps to the `transparent` argument.
+
+```{r export, eval = FALSE}
+p <- zhn_plot_cases_by_year(cohort)
+zhn_save_plot(p, "cases_by_year.png", format = "png", width = 8, height = 5)
+zhn_save_plot(p, "cases_by_year.pdf", format = "pdf", transparent = TRUE)
+```

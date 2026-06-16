@@ -1,0 +1,160 @@
+<svg width="500" height="580" viewBox="0 0 500 580" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgonco" x1="0" y1="0" x2="0.15" y2="1">
+      <stop offset="0%"  stop-color="#08152a"/>
+      <stop offset="100%" stop-color="#040a18"/>
+    </linearGradient>
+    <!-- Iris lens glow -->
+    <radialGradient id="irisGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#1358A6" stop-opacity="0.18"/>
+      <stop offset="70%"  stop-color="#0E4488" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0E4488" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Lens fill -->
+    <radialGradient id="lensFill" cx="42%" cy="38%" r="65%">
+      <stop offset="0%"   stop-color="#102b4f" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#081830" stop-opacity="0.15"/>
+    </radialGradient>
+    <clipPath id="hexonco">
+      <polygon points="250,30 455,145 455,375 250,490 45,375 45,145"/>
+    </clipPath>
+    <!-- Clip for points inside the lens (magnified view) -->
+    <clipPath id="lensClip">
+      <circle cx="250" cy="280" r="92"/>
+    </clipPath>
+  </defs>
+
+  <polygon points="250,30 455,145 455,375 250,490 45,375 45,145" fill="url(#bgonco)"/>
+
+  <g clip-path="url(#hexonco)">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- PATIENT COHORT CLUSTER — dots across the whole hex      -->
+    <!-- Outside-lens dots are dimmer/smaller (unfocused)        -->
+    <!-- ════════════════════════════════════════════════════════ -->
+
+    <!-- Scattered cohort dots (background, outside scope) -->
+    <circle cx="110" cy="180" r="2.5" fill="#0E4488" opacity="0.45"/>
+    <circle cx="140" cy="160" r="2"   fill="#1358A6" opacity="0.4"/>
+    <circle cx="175" cy="195" r="2.2" fill="#0E4488" opacity="0.42"/>
+    <circle cx="95"  cy="220" r="2"   fill="#0E4488" opacity="0.4"/>
+    <circle cx="130" cy="240" r="2.4" fill="#0E4488" opacity="0.45"/>
+    <circle cx="160" cy="225" r="1.8" fill="#1358A6" opacity="0.38"/>
+    <circle cx="100" cy="270" r="2.2" fill="#0E4488" opacity="0.4"/>
+    <circle cx="350" cy="170" r="2.4" fill="#1358A6" opacity="0.42"/>
+    <circle cx="380" cy="195" r="2"   fill="#0E4488" opacity="0.4"/>
+    <circle cx="345" cy="215" r="2.2" fill="#0E4488" opacity="0.42"/>
+    <circle cx="400" cy="225" r="1.8" fill="#0E4488" opacity="0.38"/>
+    <circle cx="370" cy="250" r="2.4" fill="#1358A6" opacity="0.42"/>
+    <circle cx="405" cy="260" r="2"   fill="#0E4488" opacity="0.4"/>
+    <circle cx="120" cy="370" r="2.2" fill="#0E4488" opacity="0.42"/>
+    <circle cx="155" cy="390" r="2"   fill="#1358A6" opacity="0.4"/>
+    <circle cx="180" cy="365" r="2.4" fill="#0E4488" opacity="0.42"/>
+    <circle cx="110" cy="400" r="1.8" fill="#0E4488" opacity="0.38"/>
+    <circle cx="340" cy="375" r="2.2" fill="#0E4488" opacity="0.42"/>
+    <circle cx="370" cy="395" r="2"   fill="#1358A6" opacity="0.4"/>
+    <circle cx="395" cy="370" r="2.4" fill="#0E4488" opacity="0.42"/>
+    <circle cx="355" cy="410" r="1.8" fill="#0E4488" opacity="0.38"/>
+    <circle cx="250" cy="410" r="2.2" fill="#0E4488" opacity="0.4"/>
+    <circle cx="220" cy="400" r="1.8" fill="#1358A6" opacity="0.38"/>
+    <circle cx="285" cy="405" r="2"   fill="#0E4488" opacity="0.4"/>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- IRIS GLOW behind lens                                   -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <circle cx="250" cy="280" r="120" fill="url(#irisGlow)"/>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- MAGNIFIED COHORT — brighter, larger dots inside lens    -->
+    <!-- Clipped to the lens circle                              -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <g clip-path="url(#lensClip)">
+      <!-- Lens inner fill -->
+      <circle cx="250" cy="280" r="92" fill="url(#lensFill)"/>
+
+      <!-- Magnified patient dots — the focal cohort -->
+      <circle cx="218" cy="248" r="4.5" fill="#1358A6" opacity="0.92"/>
+      <circle cx="245" cy="235" r="4"   fill="#0E4488" opacity="0.9"/>
+      <circle cx="275" cy="250" r="4.5" fill="#1358A6" opacity="0.9"/>
+      <circle cx="300" cy="240" r="3.8" fill="#1358A6" opacity="0.85"/>
+      <circle cx="205" cy="278" r="4"   fill="#0E4488" opacity="0.9"/>
+      <circle cx="235" cy="272" r="5"   fill="#5B95D6" opacity="0.95"/>
+      <circle cx="262" cy="282" r="4.2" fill="#1358A6" opacity="0.92"/>
+      <circle cx="292" cy="275" r="4"   fill="#0E4488" opacity="0.88"/>
+      <circle cx="218" cy="305" r="4.2" fill="#1358A6" opacity="0.9"/>
+      <circle cx="248" cy="312" r="4.5" fill="#0E4488" opacity="0.9"/>
+      <circle cx="278" cy="308" r="4"   fill="#1358A6" opacity="0.88"/>
+      <circle cx="305" cy="300" r="3.6" fill="#1358A6" opacity="0.85"/>
+      <circle cx="195" cy="252" r="3.5" fill="#1358A6" opacity="0.82"/>
+      <circle cx="225" cy="330" r="3.6" fill="#0E4488" opacity="0.85"/>
+      <circle cx="285" cy="328" r="3.4" fill="#1358A6" opacity="0.85"/>
+      <circle cx="308" cy="262" r="3.4" fill="#0E4488" opacity="0.82"/>
+      <circle cx="190" cy="295" r="3.4" fill="#1358A6" opacity="0.82"/>
+
+      <!-- A few semantic links between focal patients -->
+      <line x1="235" y1="272" x2="262" y2="282" stroke="#1358A6" stroke-width="0.6" opacity="0.4"/>
+      <line x1="235" y1="272" x2="245" y2="235" stroke="#1358A6" stroke-width="0.6" opacity="0.35"/>
+      <line x1="262" y1="282" x2="248" y2="312" stroke="#1358A6" stroke-width="0.6" opacity="0.35"/>
+      <line x1="218" y1="248" x2="235" y2="272" stroke="#0E4488" stroke-width="0.5" opacity="0.3"/>
+      <line x1="275" y1="250" x2="292" y2="275" stroke="#0E4488" stroke-width="0.5" opacity="0.3"/>
+      <line x1="248" y1="312" x2="278" y2="308" stroke="#0E4488" stroke-width="0.5" opacity="0.28"/>
+
+      <!-- One highlighted "index case" — brighter with halo -->
+      <circle cx="250" cy="280" r="9" fill="#0E4488" opacity="0.25"/>
+      <circle cx="250" cy="280" r="5.5" fill="#5B95D6" opacity="0.98"/>
+      <circle cx="250" cy="280" r="2" fill="#ffffff" opacity="0.85"/>
+    </g>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- LENS RING — the scope itself                            -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- Outer ring -->
+    <circle cx="250" cy="280" r="92" fill="none" stroke="#1358A6" stroke-width="4.5" opacity="0.95"/>
+    <!-- Inner bevel ring -->
+    <circle cx="250" cy="280" r="86" fill="none" stroke="#0E4488" stroke-width="1.5" opacity="0.6"/>
+    <!-- Specular highlight arc (top-left of lens) -->
+    <path d="M 192,232 A 86 86 0 0 1 250,194"
+      fill="none" stroke="#5B95D6" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- CROSSHAIR / RETICLE — across the lens                   -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- Horizontal -->
+    <line x1="170" y1="280" x2="222" y2="280" stroke="#1358A6" stroke-width="1.2" opacity="0.55"/>
+    <line x1="278" y1="280" x2="330" y2="280" stroke="#1358A6" stroke-width="1.2" opacity="0.55"/>
+    <!-- Vertical -->
+    <line x1="250" y1="200" x2="250" y2="252" stroke="#1358A6" stroke-width="1.2" opacity="0.55"/>
+    <line x1="250" y1="308" x2="250" y2="360" stroke="#1358A6" stroke-width="1.2" opacity="0.55"/>
+    <!-- Tick marks on crosshair -->
+    <line x1="185" y1="277" x2="185" y2="283" stroke="#1358A6" stroke-width="1" opacity="0.45"/>
+    <line x1="315" y1="277" x2="315" y2="283" stroke="#1358A6" stroke-width="1" opacity="0.45"/>
+    <line x1="247" y1="215" x2="253" y2="215" stroke="#1358A6" stroke-width="1" opacity="0.45"/>
+    <line x1="247" y1="345" x2="253" y2="345" stroke="#1358A6" stroke-width="1" opacity="0.45"/>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- SCOPE HANDLE — extends to lower-right (magnifier grip)  -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <line x1="315" y1="345" x2="368" y2="398"
+      stroke="#1358A6" stroke-width="9" stroke-linecap="round" opacity="0.92"/>
+    <line x1="315" y1="345" x2="368" y2="398"
+      stroke="#0E4488" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- COHORT COUNT BADGE — small annotation top-left         -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <text font-family="monospace" font-size="9" fill="#1358A6" opacity="0.6"
+      text-anchor="start" x="92" y="320">n = cohort</text>
+    <line x1="92" y1="305" x2="148" y2="305" stroke="#0E4488" stroke-width="0.6" opacity="0.4"/>
+
+  </g>
+
+  <!-- Hex border — onco magenta-violet -->
+  <polygon points="250,30 455,145 455,375 250,490 45,375 45,145"
+    fill="none" stroke="#1358A6" stroke-width="11" stroke-linejoin="round"/>
+  <polygon points="250,44 441,153 441,367 250,476 59,367 59,153"
+    fill="none" stroke="#0E4488" stroke-width="1.5" stroke-linejoin="round" opacity="0.6"/>
+
+  <!-- Package name -->
+  <text font-family="monospace" font-weight="700" font-size="23"
+    fill="#5B95D6" text-anchor="middle" x="250" y="545" letter-spacing="0.5">zhncommandR</text>
+</svg>

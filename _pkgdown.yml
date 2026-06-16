@@ -49,6 +49,9 @@ reference:
       - new_diagnostic_blocks
 
 articles:
-  - title: Getting started
+  - title: Articles
+    navbar: ~
     contents:
       - zhncommandR
+      - figures-and-tables
+      - shiny-app

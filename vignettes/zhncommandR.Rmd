@@ -19,11 +19,22 @@ knitr::opts_chunk$set(
 library(zhncommandR)
 ```
 
+<p style="text-align:center; margin: 1.5rem 0;">
+  <img src="logo-wordmark.svg" alt="zhncommandR" height="150" />
+</p>
+
 `zhncommandR` packages the **ZHN Auditor** dashboard — a Shiny app for live
 evaluation of haematological tumour-centre cohorts — together with the
 backend helpers that drive it. The dashboard is launched with
 `zhn_run_app()`. The rest of this vignette shows the same analyses run
 programmatically against the bundled synthetic example.
+
+This package ships three vignettes:
+
+- **Getting started** (this one) — readers, parsers and a first survival curve.
+- **Figures and tables** — the publication-ready figures and the tables behind
+  every dashboard panel, run programmatically.
+- **The Shiny dashboard** — a guided tour of the interactive auditor app.
 
 ## Example data
 
