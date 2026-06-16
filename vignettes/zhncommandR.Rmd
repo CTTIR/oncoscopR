@@ -1,6 +1,9 @@
 ---
 title: "Getting started with zhncommandR"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    css: themakr-vignette.css
 vignette: >
   %\VignetteIndexEntry{Getting started with zhncommandR}
   %\VignetteEngine{knitr::rmarkdown}
