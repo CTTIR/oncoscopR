@@ -32,6 +32,7 @@ Imports:
     janitor,
     lifecycle,
     lubridate,
+    ragg,
     readxl,
     rlang,
     scales,
@@ -39,6 +40,7 @@ Imports:
     stats,
     stringr,
     survival,
+    systemfonts,
     tidyr,
     utils
 Suggests:

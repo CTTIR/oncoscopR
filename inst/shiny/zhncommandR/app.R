@@ -54,6 +54,11 @@ if (requireNamespace("thematic", quietly = TRUE)) {
 }
 ggplot2::theme_set(ggplot2::theme_minimal(base_size = 13))
 
+# ragg device so on-screen Inter matches the exported PNG/PDF; register the
+# bundled OFL Inter font for live display and exports (degrades gracefully).
+options(shiny.useragg = TRUE)
+zhncommandR::zhn_register_fonts()
+
 # ---- i18n (DE default, EN toggle) ------------------------------------------
 .app_dir <- system.file("shiny", "zhncommandR", package = "zhncommandR")
 if (!nzchar(.app_dir)) .app_dir <- getwd()
@@ -64,6 +69,18 @@ i18n$set_translation_language("de")
 # Tiny helper: translate fallback to original if a key is missing.
 .tr <- function(s) i18n$t(s)
 
+# Compact PNG (600 dpi) + PDF download pair for a figure card (ids match the
+# server-side .dl_handlers registration: <id>_png / <id>_pdf).
+.dl_ui <- function(id) {
+  shiny::div(
+    class = "mt-2 d-flex gap-2",
+    shiny::downloadButton(paste0(id, "_png"), "PNG (600 dpi)",
+                          class = "btn-sm btn-outline-secondary"),
+    shiny::downloadButton(paste0(id, "_pdf"), "PDF",
+                          class = "btn-sm btn-outline-secondary")
+  )
+}
+
 ui <- shiny::fluidPage(
   theme = .coder_theme(),
   title = .tr("Hämatologisches Tumorzentrum – Auditor-Auswertung"),
@@ -71,18 +88,31 @@ ui <- shiny::fluidPage(
   bslib::layout_sidebar(
     sidebar = bslib::sidebar(
       width = 390,
+      # Branding: large hex on top, package name small in Hugo Coder blue
+      # below it. Dark/light toggle sits top-right (client-side, no reload).
       shiny::div(
-        class = "d-flex align-items-center gap-3 mb-3",
-        shiny::tags$img(
-          src = "logo.svg",
-          alt = "zhncommandR logo",
-          height = "72",
-          style = "display:inline-block;"
+        class = "mb-3",
+        shiny::div(
+          class = "d-flex justify-content-end",
+          bslib::input_dark_mode(id = "color_mode")
         ),
-        shiny::h2("zhncommandR", class = "m-0"),
-        # Instant light/dark toggle (flips data-bs-theme; styled in custom.scss).
-        # Client-side only — no reload, no external calls.
-        bslib::input_dark_mode(id = "color_mode", class = "ms-auto")
+        shiny::div(
+          style = paste(
+            "display:flex; flex-direction:column;",
+            "align-items:center; line-height:1;"
+          ),
+          shiny::tags$img(
+            src = "logo.png", height = "84", alt = "zhncommandR",
+            style = "display:block;"
+          ),
+          shiny::tags$span(
+            "zhncommandR",
+            style = paste(
+              "font-family:Inter,system-ui,sans-serif; font-size:0.9rem;",
+              "color:#1565C0; margin-top:6px; letter-spacing:.2px;"
+            )
+          )
+        )
       ),
 
       # --- Language toggle DE / EN (no label) --------------------------
@@ -126,6 +156,11 @@ ui <- shiny::fluidPage(
       ),
       shiny::hr(),
       shiny::h5(.tr("Globale Filter")),
+      shiny::checkboxInput(
+        "fig_transparent",
+        .tr("Transparenter Hintergrund (Abbildungen)"),
+        value = FALSE
+      ),
       shiny::uiOutput("global_filters"),
       shiny::hr(),
       shiny::h5(.tr("Freitextsuche")),
@@ -155,9 +190,11 @@ ui <- shiny::fluidPage(
           shiny::br(),
           shiny::fluidRow(
             shiny::column(6, bslib::card(bslib::card_header(.tr("Fälle nach Diagnose/Kodierung")),
-                                         shiny::plotOutput("plot_diagnosis", height = 430))),
+                                         shiny::plotOutput("plot_diagnosis", height = 430),
+                                         .dl_ui("dl_diagnoses"))),
             shiny::column(6, bslib::card(bslib::card_header(.tr("Jährliche Fallzahlen")),
-                                         shiny::plotOutput("plot_year", height = 430)))
+                                         shiny::plotOutput("plot_year", height = 430),
+                                         .dl_ui("dl_year")))
           ),
           shiny::br(),
           shiny::fluidRow(
@@ -268,7 +305,7 @@ ui <- shiny::fluidPage(
               shiny::uiOutput("km_ui"),
               shiny::actionButton("run_km", .tr("KM aktualisieren"), class = "btn-primary"),
               shiny::br(), shiny::br(),
-              shiny::downloadButton("download_km_plot", .tr("KM Plot PNG"))
+              .dl_ui("dl_km")
             )),
             shiny::column(8, bslib::card(
               bslib::card_header(.tr("Kaplan–Meier Plot")),
@@ -303,9 +340,11 @@ ui <- shiny::fluidPage(
           shiny::br(),
           shiny::fluidRow(
             shiny::column(6, bslib::card(bslib::card_header(.tr("Blöcke je Therapieprotokoll")),
-                                         shiny::plotOutput("therapy_protocol_plot", height = 520))),
+                                         shiny::plotOutput("therapy_protocol_plot", height = 520),
+                                         .dl_ui("dl_therapy_protocol"))),
             shiny::column(6, bslib::card(bslib::card_header(.tr("Monatliche OPS-8-544-Blöcke")),
-                                         shiny::plotOutput("therapy_month_plot", height = 520)))
+                                         shiny::plotOutput("therapy_month_plot", height = 520),
+                                         .dl_ui("dl_therapy_month")))
           ),
           shiny::br(),
           bslib::card(bslib::card_header(.tr("Detailtabelle der gezählten Blöcke")),
@@ -339,9 +378,11 @@ ui <- shiny::fluidPage(
           shiny::br(),
           shiny::fluidRow(
             shiny::column(6, bslib::card(bslib::card_header(.tr("Diagnostikbereiche")),
-                                         shiny::plotOutput("diagnostic_component_plot", height = 520))),
+                                         shiny::plotOutput("diagnostic_component_plot", height = 520),
+                                         .dl_ui("dl_diag_component"))),
             shiny::column(6, bslib::card(bslib::card_header(.tr("Monatliche OPS-1-941-Fälle")),
-                                         shiny::plotOutput("diagnostic_month_plot", height = 520)))
+                                         shiny::plotOutput("diagnostic_month_plot", height = 520),
+                                         .dl_ui("dl_diag_month")))
           ),
           shiny::br(),
           bslib::card(bslib::card_header(.tr("Detailtabelle der komplexen Diagnostiken")),
@@ -358,7 +399,7 @@ ui <- shiny::fluidPage(
               shiny::br(), shiny::br(),
               shiny::downloadButton("download_oncoprint_data", .tr("Mutationsdaten CSV")),
               shiny::downloadButton("download_structural_data", .tr("Struktur-/Zytogenetik CSV")),
-              shiny::downloadButton("download_oncoprint_plot", .tr("Oncoprint PNG"))
+              .dl_ui("dl_oncoprint")
             )),
             shiny::column(8, bslib::layout_column_wrap(
               width = 1/3,
@@ -402,7 +443,8 @@ ui <- shiny::fluidPage(
           shiny::br(),
           shiny::fluidRow(
             shiny::column(6, bslib::card(bslib::card_header(.tr("Top-Zytogenetik gesamt")),
-                                         shiny::plotOutput("cyto_plot", height = 520))),
+                                         shiny::plotOutput("cyto_plot", height = 520),
+                                         .dl_ui("dl_cyto"))),
             shiny::column(6, bslib::card(bslib::card_header(.tr("Zytogenetik nach Entität")),
                                          DT::DTOutput("cyto_summary_table")))
           ),
@@ -418,7 +460,7 @@ ui <- shiny::fluidPage(
               shiny::uiOutput("box_ui"),
               shiny::actionButton("run_box", .tr("Boxplot aktualisieren"), class = "btn-primary"),
               shiny::br(), shiny::br(),
-              shiny::downloadButton("download_box_plot", .tr("Boxplot PNG"))
+              .dl_ui("dl_box")
             )),
             shiny::column(8, bslib::card(bslib::card_header(.tr("Boxplot")),
                                          shiny::plotOutput("box_plot", height = 540)))
@@ -434,6 +476,27 @@ ui <- shiny::fluidPage(
 )
 
 server <- function(input, output, session) {
+
+  # Register PNG (600 dpi) + PDF (vector) download handlers for one figure.
+  # `plot_reactive` yields the on-screen ggplot; `name` is the export basename
+  # (a string, or a function returning one — used for the KM custom title).
+  .dl_handlers <- function(id, plot_reactive, name) {
+    base <- function() if (is.function(name)) name() else name
+    output[[paste0(id, "_png")]] <- shiny::downloadHandler(
+      filename = function() paste0(base(), "_", Sys.Date(), ".png"),
+      content  = function(file) zhncommandR::zhn_save_plot(
+        plot_reactive(), file, format = "png",
+        transparent = isTRUE(input$fig_transparent)
+      )
+    )
+    output[[paste0(id, "_pdf")]] <- shiny::downloadHandler(
+      filename = function() paste0(base(), "_", Sys.Date(), ".pdf"),
+      content  = function(file) zhncommandR::zhn_save_plot(
+        plot_reactive(), file, format = "pdf",
+        transparent = isTRUE(input$fig_transparent)
+      )
+    )
+  }
 
   # ------------------------------------------------------------------
   # Language toggle (DE / EN) -- swaps DOM strings via shiny.i18n
@@ -592,38 +655,32 @@ server <- function(input, output, session) {
            scales::percent(n / max(denom, 1), accuracy = 0.1), ")")
   })
 
-  output$plot_diagnosis <- shiny::renderPlot({
+  diagnoses_plot <- shiny::reactive({
     df <- data_filtered()
     diagnosis_col <- find_col(df, c("diagnose", "kodierung"))
     shiny::validate(shiny::need(
       !is.null(diagnosis_col), .tr("Keine Diagnose-/Kodierungsspalte gefunden.")
     ))
-    df |>
-      dplyr::count(.data[[diagnosis_col]], sort = TRUE) |>
-      dplyr::slice_head(n = 20) |>
-      ggplot2::ggplot(ggplot2::aes(
-        x = stats::reorder(.data[[diagnosis_col]], .data$n), y = .data$n
-      )) +
-      ggplot2::geom_col() +
-      ggplot2::coord_flip() +
-      ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::labs(x = NULL, y = .tr("Anzahl"), title = .tr("Top-Diagnosen/Kodierungen"))
+    zhncommandR::zhn_plot_diagnoses(
+      df, col = diagnosis_col,
+      transparent = isTRUE(input$fig_transparent), ylab = .tr("Anzahl")
+    )
   })
+  output$plot_diagnosis <- shiny::renderPlot(diagnoses_plot(), bg = "transparent")
+  .dl_handlers("dl_diagnoses", diagnoses_plot, "top_diagnosen_kodierungen")
 
-  output$plot_year <- shiny::renderPlot({
+  cases_year_plot <- shiny::reactive({
     df <- data_filtered()
     shiny::validate(shiny::need(
       "behandlungsjahr" %in% names(df), .tr("Kein Behandlungsjahr ableitbar.")
     ))
-    df |>
-      dplyr::filter(!is.na(.data$behandlungsjahr)) |>
-      dplyr::count(.data$behandlungsjahr) |>
-      ggplot2::ggplot(ggplot2::aes(x = factor(.data$behandlungsjahr),
-                                   y = .data$n)) +
-      ggplot2::geom_col() +
-      ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::labs(x = .tr("Jahr"), y = .tr("Anzahl"), title = .tr("Fallzahlen nach Jahr"))
+    zhncommandR::zhn_plot_cases_by_year(
+      df, transparent = isTRUE(input$fig_transparent),
+      xlab = .tr("Jahr"), ylab = .tr("Anzahl")
+    )
   })
+  output$plot_year <- shiny::renderPlot(cases_year_plot(), bg = "transparent")
+  .dl_handlers("dl_year", cases_year_plot, "fallzahlen_nach_jahr")
 
   output$indicator_table <- DT::renderDT({
     df <- data_filtered()
@@ -1014,7 +1071,7 @@ server <- function(input, output, session) {
         "PFS automatisch: PFS + Rezidiv Event" = "pfs_auto",
         "OS automatisch: OS + Death Event" = "os_auto",
         "Manuell" = "manual"
-      ), selected = "pfs_auto"),
+      ), selected = "os_auto"),
       shiny::selectizeInput("km_diagnosis", .tr("Diagnose/Entität für KM-Kurve"),
                             choices = c("Alle Diagnosen" = "__all__", diagnose_choices),
                             selected = "__all__", multiple = FALSE),
@@ -1097,31 +1154,24 @@ server <- function(input, output, session) {
       input$km_title
     } else default_title
 
-    if (requireNamespace("survminer", quietly = TRUE)) {
-      survminer::ggsurvplot(
-        fit, data = km_df,
-        conf.int = isTRUE(input$km_confint),
-        risk.table = isTRUE(input$km_risktable),
-        ggtheme = ggplot2::theme_minimal(base_size = 13),
-        title = title_to_use, xlab = input$km_xlab, ylab = input$km_ylab,
-        censor = TRUE, risk.table.height = 0.25
-      )
-    } else {
-      # Fallback when survminer is unavailable.
-      .km_base_plot(fit, km_df, title_to_use, input$km_xlab, input$km_ylab,
-                    show_ci = isTRUE(input$km_confint))
-    }
+    zhncommandR::zhn_plot_km(
+      fit,
+      title       = title_to_use,
+      xlab        = input$km_xlab,
+      ylab        = input$km_ylab,
+      transparent = isTRUE(input$fig_transparent),
+      show_ci     = isTRUE(input$km_confint)
+    )
   }, ignoreNULL = FALSE)
 
-  output$km_plot <- shiny::renderPlot({ g <- km_plot_obj(); shiny::req(g); print(g) })
-  output$download_km_plot <- shiny::downloadHandler(
-    filename = function() paste0("KM_", Sys.Date(), ".png"),
-    content = function(file) {
-      g <- km_plot_obj()
-      grDevices::png(file, width = 1500, height = 1000, res = 150)
-      print(g); grDevices::dev.off()
-    }
+  output$km_plot <- shiny::renderPlot(
+    { g <- km_plot_obj(); shiny::req(g); g },
+    bg = "transparent"
   )
+  # KM export basename = slugified custom title (§10), else kaplan_meier.
+  .dl_handlers("dl_km", km_plot_obj, function() {
+    zhncommandR:::.slugify(input$km_title, fallback = "kaplan_meier")
+  })
 
   # ------------------------------------------------------------------
   # OPS-8-544
@@ -1220,28 +1270,33 @@ server <- function(input, output, session) {
     DT::datatable(tab, rownames = FALSE, options = list(pageLength = 15, scrollX = TRUE))
   })
 
-  output$therapy_protocol_plot <- shiny::renderPlot({
+  therapy_protocol_plot_obj <- shiny::reactive({
     blocks <- therapy_filtered()
     shiny::validate(shiny::need(nrow(blocks) > 0, .tr("Keine Therapieblöcke im aktuellen Filter.")))
     tab <- blocks |> dplyr::count(.data$therapieprotokoll, sort = TRUE) |> dplyr::slice_head(n = 20)
     ggplot2::ggplot(tab, ggplot2::aes(x = stats::reorder(.data$therapieprotokoll, .data$n),
                                       y = .data$n)) +
-      ggplot2::geom_col() + ggplot2::coord_flip() +
-      ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::labs(x = NULL, y = .tr("OPS-8-544-Blöcke"), title = .tr("Blöcke nach Therapieprotokoll"))
+      ggplot2::geom_col(fill = zhncommandR::zhn_pal$accent) + ggplot2::coord_flip() +
+      ggplot2::labs(x = NULL, y = .tr("OPS-8-544-Blöcke")) +
+      zhncommandR::zhn_theme(transparent = isTRUE(input$fig_transparent))
   })
+  output$therapy_protocol_plot <- shiny::renderPlot(therapy_protocol_plot_obj(), bg = "transparent")
+  .dl_handlers("dl_therapy_protocol", therapy_protocol_plot_obj, "bloecke_nach_therapieprotokoll")
 
-  output$therapy_month_plot <- shiny::renderPlot({
+  therapy_month_plot_obj <- shiny::reactive({
     blocks <- therapy_filtered()
     shiny::validate(shiny::need(nrow(blocks) > 0, .tr("Keine Therapieblöcke im aktuellen Filter.")))
     tab <- blocks |> dplyr::filter(!is.na(.data$monat_sort)) |> dplyr::count(.data$monat_sort)
     shiny::validate(shiny::need(nrow(tab) > 0, .tr("Keine verwertbaren Datums-/Monatsangaben.")))
     ggplot2::ggplot(tab, ggplot2::aes(x = .data$monat_sort, y = .data$n, group = 1)) +
-      ggplot2::geom_line() + ggplot2::geom_point() +
-      ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
-      ggplot2::labs(x = .tr("Monat"), y = .tr("OPS-8-544-Blöcke"), title = .tr("Monatliche OPS-8-544-Blöcke"))
+      ggplot2::geom_line(colour = zhncommandR::zhn_pal$accent, linewidth = 0.7) +
+      ggplot2::geom_point(colour = zhncommandR::zhn_pal$accent) +
+      ggplot2::labs(x = .tr("Monat"), y = .tr("OPS-8-544-Blöcke")) +
+      zhncommandR::zhn_theme(transparent = isTRUE(input$fig_transparent)) +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
   })
+  output$therapy_month_plot <- shiny::renderPlot(therapy_month_plot_obj(), bg = "transparent")
+  .dl_handlers("dl_therapy_month", therapy_month_plot_obj, "monatliche_ops_8_544_bloecke")
 
   output$therapy_block_details <- DT::renderDT({
     blocks <- therapy_filtered()
@@ -1362,28 +1417,33 @@ server <- function(input, output, session) {
     DT::datatable(tab, rownames = FALSE, options = list(pageLength = 15, scrollX = TRUE))
   })
 
-  output$diagnostic_component_plot <- shiny::renderPlot({
+  diagnostic_component_plot_obj <- shiny::reactive({
     long <- diagnostic_components_filtered()
     shiny::validate(shiny::need(nrow(long) > 0, .tr("Keine komplexen Diagnostik-Komponenten im aktuellen Filter.")))
     tab <- long |> dplyr::count(.data$diagnostik_bereich, sort = TRUE)
     ggplot2::ggplot(tab, ggplot2::aes(x = stats::reorder(.data$diagnostik_bereich, .data$n),
                                       y = .data$n)) +
-      ggplot2::geom_col() + ggplot2::coord_flip() +
-      ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::labs(x = NULL, y = .tr("Anzahl"), title = .tr("OPS-1-941-Komponenten"))
+      ggplot2::geom_col(fill = zhncommandR::zhn_pal$accent) + ggplot2::coord_flip() +
+      ggplot2::labs(x = NULL, y = .tr("Anzahl")) +
+      zhncommandR::zhn_theme(transparent = isTRUE(input$fig_transparent))
   })
+  output$diagnostic_component_plot <- shiny::renderPlot(diagnostic_component_plot_obj(), bg = "transparent")
+  .dl_handlers("dl_diag_component", diagnostic_component_plot_obj, "ops_1_941_komponenten")
 
-  output$diagnostic_month_plot <- shiny::renderPlot({
+  diagnostic_month_plot_obj <- shiny::reactive({
     blocks <- diagnostic_filtered()
     shiny::validate(shiny::need(nrow(blocks) > 0, .tr("Keine komplexen Diagnostiken im aktuellen Filter.")))
     tab <- blocks |> dplyr::filter(!is.na(.data$monat_sort)) |> dplyr::count(.data$monat_sort)
     shiny::validate(shiny::need(nrow(tab) > 0, .tr("Keine verwertbaren Datums-/Monatsangaben.")))
     ggplot2::ggplot(tab, ggplot2::aes(x = .data$monat_sort, y = .data$n, group = 1)) +
-      ggplot2::geom_line() + ggplot2::geom_point() +
-      ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
-      ggplot2::labs(x = .tr("Monat"), y = .tr("OPS-1-941-Fälle"), title = .tr("Monatliche komplexe Diagnostiken"))
+      ggplot2::geom_line(colour = zhncommandR::zhn_pal$accent, linewidth = 0.7) +
+      ggplot2::geom_point(colour = zhncommandR::zhn_pal$accent) +
+      ggplot2::labs(x = .tr("Monat"), y = .tr("OPS-1-941-Fälle")) +
+      zhncommandR::zhn_theme(transparent = isTRUE(input$fig_transparent)) +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
   })
+  output$diagnostic_month_plot <- shiny::renderPlot(diagnostic_month_plot_obj(), bg = "transparent")
+  .dl_handlers("dl_diag_month", diagnostic_month_plot_obj, "monatliche_komplexe_diagnostiken")
 
   output$diagnostic_block_details <- DT::renderDT({
     blocks <- diagnostic_filtered()
@@ -1494,7 +1554,9 @@ server <- function(input, output, session) {
                                           fill = .data$alteration_class)) +
       ggplot2::geom_tile(color = "white", linewidth = 0.25) +
       ggplot2::facet_grid(. ~ diagnose_label, scales = "free_x", space = "free_x") +
-      ggplot2::theme_minimal(base_size = 12) +
+      ggplot2::scale_fill_viridis_d(option = "mako", begin = 0.15, end = 0.85) +
+      zhncommandR::zhn_theme(base_size = 12,
+                             transparent = isTRUE(input$fig_transparent)) +
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5,
                                             size = if (isTRUE(input$onco_show_patient_names)) 7 else 5),
@@ -1503,13 +1565,14 @@ server <- function(input, output, session) {
         legend.position = "bottom"
       ) +
       ggplot2::labs(
-        title = .tr("Oncoprint: echte Mutationen/Varianten"),
-        subtitle = .tr("NA, negative Befunde und strukturelle/zytogenetische Alterationen sind aus dem Plot ausgeschlossen"),
         x = .tr("Patient/Fall"), y = .tr("Mutation/Variante"), fill = .tr("Typ")
       )
   }, ignoreNULL = FALSE)
 
-  output$oncoprint_plot <- shiny::renderPlot({ p <- oncoprint_plot_obj(); shiny::req(p); print(p) })
+  output$oncoprint_plot <- shiny::renderPlot(
+    { p <- oncoprint_plot_obj(); shiny::req(p); p }, bg = "transparent"
+  )
+  .dl_handlers("dl_oncoprint", oncoprint_plot_obj, "oncoprint")
 
   output$oncoprint_summary_table <- DT::renderDT({
     onco <- oncoprint_long()
@@ -1564,14 +1627,6 @@ server <- function(input, output, session) {
                        fileEncoding = "UTF-8")
     }
   )
-  output$download_oncoprint_plot <- shiny::downloadHandler(
-    filename = function() paste0("Oncoprint_", Sys.Date(), ".png"),
-    content = function(file) {
-      p <- oncoprint_plot_obj()
-      ggplot2::ggsave(file, p, width = 15, height = 9, dpi = 150)
-    }
-  )
-
   # ------------------------------------------------------------------
   # Zytogenetik
   # ------------------------------------------------------------------
@@ -1635,16 +1690,17 @@ server <- function(input, output, session) {
       dplyr::arrange(.data$n) |>
       dplyr::mutate(alteration = factor(.data$alteration, levels = .data$alteration))
     ggplot2::ggplot(tab, ggplot2::aes(x = .data$alteration, y = .data$n)) +
-      ggplot2::geom_col() + ggplot2::coord_flip() +
-      ggplot2::theme_minimal(base_size = 13) +
+      ggplot2::geom_col(fill = zhncommandR::zhn_pal$accent) + ggplot2::coord_flip() +
       ggplot2::labs(
-        title = .tr("Top-Zytogenetik-Befunde"),
-        subtitle = .tr("Quelle: separate Spalte 'Zytogenetik'"),
         x = .tr("Zytogenetik-Befund"), y = .tr("Anzahl Fälle/Patienten")
-      )
+      ) +
+      zhncommandR::zhn_theme(transparent = isTRUE(input$fig_transparent))
   }, ignoreNULL = FALSE)
 
-  output$cyto_plot <- shiny::renderPlot({ p <- cyto_plot_obj(); shiny::req(p); print(p) })
+  output$cyto_plot <- shiny::renderPlot(
+    { p <- cyto_plot_obj(); shiny::req(p); p }, bg = "transparent"
+  )
+  .dl_handlers("dl_cyto", cyto_plot_obj, "zytogenetik_befunde")
 
   output$cyto_summary_table <- DT::renderDT({
     cyto <- cyto_all_filtered()
@@ -1707,24 +1763,22 @@ server <- function(input, output, session) {
     ) |> dplyr::filter(!is.na(.data$x), !is.na(.data$y))
     shiny::validate(shiny::need(nrow(plot_df) > 1, .tr("Keine verwertbaren Daten für Boxplot.")))
     p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data$x, y = .data$y)) +
-      ggplot2::geom_boxplot(outlier.shape = NA) +
-      ggplot2::theme_minimal(base_size = 13) +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
-      ggplot2::labs(title = input$box_title, x = input$box_x, y = input$box_y)
+      ggplot2::geom_boxplot(outlier.shape = NA,
+                            colour = zhncommandR::zhn_pal$accent_dark) +
+      ggplot2::labs(title = input$box_title, x = input$box_x, y = input$box_y) +
+      zhncommandR::zhn_theme(transparent = isTRUE(input$fig_transparent)) +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
     if (isTRUE(input$box_jitter)) p <- p + ggplot2::geom_jitter(width = 0.15, alpha = 0.6)
     if (isTRUE(input$box_log)) p <- p + ggplot2::scale_y_log10()
     p
   }, ignoreNULL = FALSE)
 
-  output$box_plot <- shiny::renderPlot({ p <- box_plot_obj(); shiny::req(p); print(p) })
-
-  output$download_box_plot <- shiny::downloadHandler(
-    filename = function() paste0("Boxplot_", Sys.Date(), ".png"),
-    content = function(file) {
-      p <- box_plot_obj()
-      ggplot2::ggsave(file, p, width = 10, height = 7, dpi = 150)
-    }
+  output$box_plot <- shiny::renderPlot(
+    { p <- box_plot_obj(); shiny::req(p); p }, bg = "transparent"
   )
+  .dl_handlers("dl_box", box_plot_obj, function() {
+    zhncommandR:::.slugify(input$box_title, fallback = "boxplot")
+  })
 
   # ------------------------------------------------------------------
   # Methods documentation tab
@@ -2033,31 +2087,6 @@ server <- function(input, output, session) {
       )
     )
   })
-}
-
-# Fallback KM plot when survminer is absent. Renders a base ggplot KM curve
-# with optional CI from broom::tidy(survfit) if broom is available, else
-# from a manual computation using survfit$surv/$std.err.
-.km_base_plot <- function(fit, km_df, title, xlab, ylab, show_ci = TRUE) {
-  s <- summary(fit)
-  dat <- data.frame(
-    time = s$time, surv = s$surv,
-    upper = if (!is.null(s$upper)) s$upper else s$surv,
-    lower = if (!is.null(s$lower)) s$lower else s$surv,
-    strata = if (!is.null(s$strata)) as.character(s$strata) else "All"
-  )
-  p <- ggplot2::ggplot(dat, ggplot2::aes(x = .data$time, y = .data$surv,
-                                         color = .data$strata, fill = .data$strata)) +
-    ggplot2::geom_step() +
-    ggplot2::theme_minimal(base_size = 13) +
-    ggplot2::labs(title = title, x = xlab, y = ylab)
-  if (show_ci) {
-    p <- p + ggplot2::geom_ribbon(
-      ggplot2::aes(ymin = .data$lower, ymax = .data$upper),
-      alpha = 0.15, colour = NA
-    )
-  }
-  p
 }
 
 shiny::shinyApp(ui, server)
