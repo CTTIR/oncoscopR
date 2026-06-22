@@ -41,3 +41,8 @@ Daten.xlsx
 Daten(*).xlsx
 Tumorboardbeschluesse.csv
 Therapien*.xlsx
+*.tmp
+*.log
+*.bak
+*.orig
+*.Rcheck/
