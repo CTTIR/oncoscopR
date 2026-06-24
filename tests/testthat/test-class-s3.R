@@ -65,6 +65,54 @@ test_that("new_diagnostic_blocks carries component_cols attribute", {
                    "morphologie, immunphanotypisierung")
 })
 
+test_that("summary.cohort_df returns NA for missing diagnose/year columns", {
+  df <- new_cohort_df(data.frame(other = 1:3))
+  s <- summary(df)
+  expect_true(is.na(s$diagnoses))
+  expect_true(is.na(s$years_covered))
+  expect_true(is.na(s$sheet_to_use))
+})
+
+test_that("print.therapy_blocks returns invisibly and headers the blocks", {
+  out <- new_therapy_blocks(
+    data.frame(patient = c("A", "B"),
+               therapieprotokoll = c("R-CHOP", "VRD"),
+               diagnose = c("DLBCL", "MM")),
+    patient_cols_used = "patient"
+  )
+  expect_invisible(print(out))
+  msg <- capture.output(print(out), type = "message")
+  expect_match(paste(msg, collapse = "\n"), "OPS-8-544", ignore.case = TRUE)
+})
+
+test_that("print.diagnostic_blocks returns invisibly and headers the cases", {
+  out <- new_diagnostic_blocks(
+    data.frame(patient = c("A", "B"), diagnose = c("MM", "AML")),
+    component_cols = "morphologie"
+  )
+  expect_invisible(print(out))
+  msg <- capture.output(print(out), type = "message")
+  expect_match(paste(msg, collapse = "\n"), "OPS-1-941", ignore.case = TRUE)
+})
+
+test_that("summary.diagnostic_blocks counts cases, patients, diagnoses", {
+  out <- new_diagnostic_blocks(
+    data.frame(patient = c("A", "A", "B"),
+               diagnose = c("MM", "MM", "AML")),
+    component_cols = "morphologie, zytogenetik"
+  )
+  s <- summary(out)
+  expect_identical(s$cases, 3L)
+  expect_identical(s$patients, 2L)
+  expect_identical(s$diagnoses, 2L)
+  expect_identical(s$components, "morphologie, zytogenetik")
+})
+
+test_that("therapy/diagnostic constructors reject non-data-frame input", {
+  expect_error(new_therapy_blocks(list()), "must be a data frame")
+  expect_error(new_diagnostic_blocks(1:3), "must be a data frame")
+})
+
 test_that("parsers return their S3 class on the example data", {
   skip_if_not_installed("openxlsx")
   raw <- zhn_read_therapy(zhn_example_path(), verbose = FALSE)

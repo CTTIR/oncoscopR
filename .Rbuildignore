@@ -14,6 +14,7 @@
 ^pkgdown$
 ^\.covrignore$
 ^codecov\.yml$
+^_coverage$
 ^\.DS_Store$
 ^README\.Rmd$
 ^README_files$

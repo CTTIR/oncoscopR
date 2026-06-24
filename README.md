@@ -6,12 +6,16 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/CTTIR/zhncommandR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CTTIR/zhncommandR/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/CTTIR/zhncommandR/actions/workflows/pkgdown.yaml/badge.svg)](https://cttir.github.io/zhncommandR/)
+[![CRAN status](https://www.r-pkg.org/badges/version/zhncommandR)](https://CRAN.R-project.org/package=zhncommandR)
 [![Codecov test
-coverage](https://codecov.io/gh/CTTIR/zhncommandR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/CTTIR/zhncommandR)
+coverage](https://codecov.io/gh/CTTIR/zhncommandR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/CTTIR/zhncommandR?branch=main)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/zhncommandR)](https://cran.r-project.org/package=zhncommandR)
+[![CRAN downloads total](https://cranlogs.r-pkg.org/badges/grand-total/zhncommandR)](https://cran.r-project.org/package=zhncommandR)
+[![License:
+MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![License:
-MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
 `zhncommandR` is an **auditor live-evaluation dashboard** for

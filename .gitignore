@@ -26,6 +26,7 @@ tests/testthat/Rplots.pdf
 *.coverage
 covr.out
 .covrignore
+_coverage/
 
 # OS / editor ----------------------------------------------------------------
 .DS_Store
